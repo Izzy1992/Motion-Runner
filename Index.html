@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Minecraft Motion Runner - Calibration</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      font-family: 'Courier New', Courier, monospace;
+    }
+
+    body {
+      background-color: #1b1b1b;
+      color: #ffffff;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Orientation Warning for Portrait Mode */
+    #rotate-warning {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #2c1e16;
+      z-index: 9999;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+      border: 8px solid #593d29;
+    }
+
+    @media (orientation: portrait) {
+      #rotate-warning {
+        display: flex;
+      }
+    }
+
+    /* Main 16:9 Split Layout */
+    #app {
+      display: flex;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Left Side: Live Camera & Skeleton View (40% width) */
+    #camera-panel {
+      position: relative;
+      width: 40%;
+      height: 100%;
+      background: #000;
+      border-right: 6px solid #593d29;
+      overflow: hidden;
+    }
+
+    video, #pose-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      /* Mirror front camera so moving left moves left on TV */
+      transform: scaleX(-1);
+    }
+
+    #cam-label {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 6px 10px;
+      border: 2px solid #55ff55;
+      font-size: 13px;
+      font-weight: bold;
+      color: #55ff55;
+      z-index: 10;
+    }
+
+    /* Right Side: Minecraft World Preview & Controls (60% width) */
+    #game-panel {
+      position: relative;
+      width: 60%;
+      height: 100%;
+      background: linear-gradient(180deg, #78a7ff 0%, #b8d2ff 60%, #5b8731 60%, #5b8731 65%, #79553a 65%, #593d29 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 16px;
+    }
+
+    /* Top HUD */
+    #hud-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.65);
+      border: 4px solid #373737;
+      padding: 10px 16px;
+    }
+
+    .badge {
+      font-size: 20px;
+      font-weight: bold;
+      padding: 6px 14px;
+      background: #222;
+      border: 3px solid #8b8b8b;
+      color: #ffff55;
+    }
+
+    .badge.active-action {
+      background: #3b8526;
+      border-color: #7cfc00;
+      color: #ffffff;
+    }
+
+    /* Minecraft 3-Lane Preview Stage */
+    #stage {
+      position: relative;
+      flex: 1;
+      margin: 12px 0;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-around;
+      padding-bottom: 24px;
+    }
+
+    .lane-marker {
+      width: 28%;
+      height: 24px;
+      background: #4a7023;
+      border: 4px solid #2d4712;
+      text-align: center;
+      line-height: 16px;
+      font-size: 12px;
+      color: #d0f0b0;
+    }
+
+    /* Pixelated Block Character */
+    #player-avatar {
+      position: absolute;
+      bottom: 48px;
+      left: 50%;
+      width: 64px;
+      height: 110px;
+      transform: translateX(-50%);
+      transition: left 0.12s ease-out, bottom 0.12s ease-out, height 0.12s ease-out;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .mc-head {
+      width: 40px;
+      height: 40px;
+      background: #d29b76;
+      border: 3px solid #2b1d12;
+      position: relative;
+    }
+    .mc-hair {
+      width: 100%;
+      height: 10px;
+      background: #3b2313;
+    }
+    .mc-eyes {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 5px 0;
+    }
+    .mc-eye {
+      width: 8px;
+      height: 6px;
+      background: #483d8b;
+    }
+    .mc-body {
+      width: 44px;
+      height: 42px;
+      background: #00aaaa;
+      border: 3px solid #004d4d;
+    }
+    .mc-legs {
+      width: 44px;
+      height: 28px;
+      background: #2f2f9e;
+      border: 3px solid #161654;
+    }
+
+    /* Duck state squashes character */
+    #player-avatar.ducking {
+      height: 62px;
+    }
+    #player-avatar.ducking .mc-body {
+      height: 20px;
+    }
+    #player-avatar.ducking .mc-legs {
+      height: 12px;
+    }
+
+    /* Jump state lifts character */
+    #player-avatar.jumping {
+      bottom: 135px;
+    }
+
+    /* Bottom Control Bar */
+    #controls {
+      background: rgba(0, 0, 0, 0.78);
+      border: 4px solid #373737;
+      padding: 10px 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    button {
+      background: #3b8526;
+      color: white;
+      border: 4px solid #1e4613;
+      border-top-color: #6bc349;
+      border-left-color: #6bc349;
+      padding: 10px 16px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    button:disabled {
+      background: #555;
+      border-color: #333;
+      color: #999;
+    }
+
+    .slider-group {
+      display: flex;
+      flex-direction: column;
+      font-size: 12px;
+      gap: 4px;
+    }
+
+    input[type="range"] {
+      width: 115px;
+      accent-color: #55ff55;
+    }
+
+    #status-msg {
+      width: 100%;
+      font-size: 13px;
+      color: #55ffff;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Rotate Phone Prompt -->
+  <div id="rotate-warning">
+    <h1 style="color:#55ff55; margin-bottom:12px;">ROTATE IPHONE TO LANDSCAPE</h1>
+    <p style="font-size:18px;">Turn your iPhone sideways (16:9) so it fills your TV screen and gives the camera a wide view.</p>
+  </div>
+
+  <div id="app">
+    <!-- Left: Camera & Skeleton Feed -->
+    <div id="camera-panel">
+      <div id="cam-label">CAMERA: WAITING...</div>
+      <video id="webcam" autoplay playsinline muted></video>
+      <canvas id="pose-canvas"></canvas>
+    </div>
+
+    <!-- Right: Minecraft Test Stage & Controls -->
+    <div id="game-panel">
+      <div id="hud-top">
+        <div>LANE: <span id="lane-badge" class="badge">CENTER</span></div>
+        <div>ACTION: <span id="action-badge" class="badge">RUN</span></div>
+      </div>
+
+      <div id="stage">
+        <div class="lane-marker">LEFT</div>
+        <div class="lane-marker">CENTER</div>
+        <div class="lane-marker">RIGHT</div>
+
+        <div id="player-avatar">
+          <div class="mc-head">
+            <div class="mc-hair"></div>
+            <div class="mc-eyes">
+              <div class="mc-eye"></div>
+              <div class="mc-eye"></div>
+            </div>
+          </div>
+          <div class="mc-body"></div>
+          <div class="mc-legs"></div>
+        </div>
+      </div>
+
+      <div id="controls">
+        <button id="start-btn">1. START CAMERA</button>
+        <button id="calibrate-btn" disabled>2. CALIBRATE CENTER</button>
+
+        <div class="slider-group">
+          <label>Side Sensitivity: <span id="lat-val">0.14</span></label>
+          <input type="range" id="lat-slider" min="0.06" max="0.28" step="0.01" value="0.14" />
+        </div>
+
+        <div class="slider-group">
+          <label>Jump/Duck Sensitivity: <span id="vert-val">0.09</span></label>
+          <input type="range" id="vert-slider" min="0.04" max="0.20" step="0.01" value="0.09" />
+        </div>
+
+        <div id="status-msg">Tap "1. START CAMERA", prop phone under TV, and have your son stand in center.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MediaPipe Tasks Vision (Official CDN) -->
+  <script type="module">
+    import {
+      FilesetResolver,
+      PoseLandmarker
+    } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
+
+    const video = document.getElementById("webcam");
+    const canvas = document.getElementById("pose-canvas");
+    const ctx = canvas.getContext("2d");
+    const camLabel = document.getElementById("cam-label");
+    const statusMsg = document.getElementById("status-msg");
+    const startBtn = document.getElementById("start-btn");
+    const calibrateBtn = document.getElementById("calibrate-btn");
+
+    const laneBadge = document.getElementById("lane-badge");
+    const actionBadge = document.getElementById("action-badge");
+    const avatar = document.getElementById("player-avatar");
+
+    const latSlider = document.getElementById("lat-slider");
+    const vertSlider = document.getElementById("vert-slider");
+    const latVal = document.getElementById("lat-val");
+    const vertVal = document.getElementById("vert-val");
+
+    let poseLandmarker = null;
+    let running = false;
+    let lastVideoTime = -1;
+
+    // Calibration baseline (normalized 0.0 to 1.0)
+    let centerX = 0.5;
+    let centerY = 0.45;
+    let latestBodyX = null;
+    let latestBodyY = null;
+
+    // Sensitivity thresholds
+    let lateralThreshold = parseFloat(latSlider.value);
+    let verticalThreshold = parseFloat(vertSlider.value);
+
+    latSlider.addEventListener("input", () => {
+      lateralThreshold = parseFloat(latSlider.value);
+      latVal.textContent = lateralThreshold.toFixed(2);
+    });
+
+    vertSlider.addEventListener("input", () => {
+      verticalThreshold = parseFloat(vertSlider.value);
+      vertVal.textContent = verticalThreshold.toFixed(2);
+    });
+
+    // Load MediaPipe Pose Landmarker (Lite model for fast mobile FPS)
+    async function initPoseDetector() {
+      statusMsg.textContent = "Loading AI Body Tracker (takes ~3 seconds)...";
+      const vision = await FilesetResolver.forVisionTasks(
+        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm"
+      );
+      poseLandmarker = await PoseLandmarker.createFromOptions(vision, {
+        baseOptions: {
+          modelAssetPath:
+            "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task",
+          delegate: "GPU"
+        },
+        runningMode: "VIDEO",
+        numPoses: 1,
+        minPoseDetectionConfidence: 0.5,
+        minPosePresenceConfidence: 0.5,
+        minTrackingConfidence: 0.5
+      });
+    }
+
+    // Start iPhone Front Camera
+    startBtn.addEventListener("click", async () => {
+      startBtn.disabled = true;
+      try {
+        if (!poseLandmarker) {
+          await initPoseDetector();
+        }
+
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: "user",
+            width: { ideal: 640 },
+            height: { ideal: 360 }
+          },
+          audio: false
+        });
+
+        video.srcObject = stream;
+        video.onloadeddata = () => {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          running = true;
+          calibrateBtn.disabled = false;
+          camLabel.textContent = "CAMERA: ACTIVE";
+          statusMsg.textContent = "Stand 1.5m away in the middle, then tap '2. CALIBRATE CENTER'!";
+          predictLoop();
+        };
+      } catch (err) {
+        camLabel.textContent = "CAMERA ERROR";
+        statusMsg.textContent = "Camera blocked or unavailable: " + err.message;
+        startBtn.disabled = false;
+      }
+    });
+
+    // Set neutral standing center for the child
+    calibrateBtn.addEventListener("click", () => {
+      if (latestBodyX !== null && latestBodyY !== null) {
+        centerX = latestBodyX;
+        centerY = latestBodyY;
+        statusMsg.textContent = "CALIBRATED! Try stepping Left/Right, Jumping, or Ducking!";
+      } else {
+        statusMsg.textContent = "Body not detected yet—make sure shoulders/head are visible in camera.";
+      }
+    });
+
+    function updateMovementUI(bodyX, bodyY) {
+      // Note: Video is CSS-mirrored, so raw camera X > centerX means player moved LEFT on TV
+      const deltaX = bodyX - centerX;
+      const deltaY = bodyY - centerY; // Smaller Y = higher on screen (Jump)
+
+      // 1. Determine Lane (Left / Center / Right)
+      let lane = "CENTER";
+      let targetLeftPercent = "50%";
+
+      if (deltaX > lateralThreshold) {
+        lane = "LEFT";
+        targetLeftPercent = "18%";
+      } else if (deltaX < -lateralThreshold) {
+        lane = "RIGHT";
+        targetLeftPercent = "82%";
+      }
+
+      laneBadge.textContent = lane;
+      avatar.style.left = targetLeftPercent;
+
+      // 2. Determine Vertical Action (Jump / Duck / Run)
+      let action = "RUN";
+      avatar.classList.remove("jumping", "ducking");
+      actionBadge.classList.remove("active-action");
+
+      if (deltaY < -verticalThreshold) {
+        action = "JUMP!";
+        avatar.classList.add("jumping");
+        actionBadge.classList.add("active-action");
+      } else if (deltaY > verticalThreshold) {
+        action = "DUCK!";
+        avatar.classList.add("ducking");
+        actionBadge.classList.add("active-action");
+      }
+
+      actionBadge.textContent = action;
+    }
+
+    function predictLoop() {
+      if (!running) return;
+
+      const startTimeMs = performance.now();
+      if (video.currentTime !== lastVideoTime) {
+        lastVideoTime = video.currentTime;
+        const results = poseLandmarker.detectForVideo(video, startTimeMs);
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw Calibration Crosshair (un-mirrored coordinates)
+        const calPxX = centerX * canvas.width;
+        const calPxY = centerY * canvas.height;
+        ctx.strokeStyle = "#ffff55";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(calPxX - 20, calPxY);
+        ctx.lineTo(calPxX + 20, calPxY);
+        ctx.moveTo(calPxX, calPxY - 20);
+        ctx.lineTo(calPxX, calPxY + 20);
+        ctx.stroke();
+
+        if (results.landmarks && results.landmarks.length > 0) {
+          const lm = results.landmarks[0];
+          // Use midpoint between Left Shoulder (11) and Right Shoulder (12)
+          const leftShoulder = lm[11];
+          const rightShoulder = lm[12];
+
+          if (leftShoulder && rightShoulder) {
+            latestBodyX = (leftShoulder.x + rightShoulder.x) / 2;
+            latestBodyY = (leftShoulder.y + rightShoulder.y) / 2;
+
+            // Draw green tracking box on child's chest/shoulders
+            const pxX = latestBodyX * canvas.width;
+            const pxY = latestBodyY * canvas.height;
+            ctx.fillStyle = "#55ff55";
+            ctx.fillRect(pxX - 12, pxY - 12, 24, 24);
+
+            updateMovementUI(latestBodyX, latestBodyY);
+          }
+        }
+      }
+
+      requestAnimationFrame(predictLoop);
+    }
+  </script>
+</body>
+</html>
