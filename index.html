@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Minecraft Motion Runner - iPhone 16 Pro</title>
+  <title>Motion Runner - Arcade Edition</title>
   <style>
     * {
       box-sizing: border-box;
@@ -58,10 +58,10 @@
       padding-right: env(safe-area-inset-right);
     }
 
-    /* Left Side: Live Camera & Calibration Panel (33% width) */
+    /* Left Side: Live Camera & Calibration Panel (32% width) */
     #camera-panel {
       position: relative;
-      width: 33%;
+      width: 32%;
       height: 100%;
       background: #000;
       border-right: 5px solid #593d29;
@@ -120,7 +120,7 @@
       padding: 8px;
       display: flex;
       flex-direction: column;
-      gap: 7px;
+      gap: 6px;
     }
 
     .cam-btn-row {
@@ -130,9 +130,9 @@
 
     .cam-btn-row button {
       flex: 1;
-      padding: 10px 4px;
+      padding: 9px 4px;
       font-size: 12px;
-      min-height: 40px;
+      min-height: 38px;
     }
 
     .slider-row {
@@ -144,15 +144,15 @@
     }
 
     .slider-row input[type="range"] {
-      width: 95px;
-      height: 22px;
+      width: 90px;
+      height: 20px;
       accent-color: #55ff55;
     }
 
-    /* Right Side: Full 3D-Perspective Minecraft Game Canvas (67% width) */
+    /* Right Side: Full 3D-Perspective Runner Canvas (68% width) */
     #game-panel {
       position: relative;
-      width: 67%;
+      width: 68%;
       height: 100%;
       background: #78a7ff;
       overflow: hidden;
@@ -179,10 +179,10 @@
     }
 
     .hud-box {
-      background: rgba(0, 0, 0, 0.72);
+      background: rgba(0, 0, 0, 0.74);
       border: 3px solid #444;
       padding: 5px 10px;
-      font-size: 15px;
+      font-size: 14px;
       font-weight: bold;
       display: flex;
       align-items: center;
@@ -191,7 +191,7 @@
 
     #hearts-display {
       color: #ff3b3b;
-      font-size: 20px;
+      font-size: 19px;
       letter-spacing: 2px;
     }
 
@@ -199,22 +199,21 @@
       color: #55ff55;
     }
 
-    #action-pill {
-      color: #ffff55;
-      font-size: 13px;
+    #best-display {
+      color: #ffd700;
     }
 
-    /* Start / Game Over Overlay */
+    /* Start / Celebration Overlay */
     #overlay-screen {
       position: absolute;
       inset: 0;
-      background: rgba(0, 0, 0, 0.76);
+      background: rgba(0, 0, 0, 0.8);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 16px;
+      padding: 14px;
       z-index: 30;
     }
 
@@ -226,28 +225,59 @@
       font-size: 26px;
       color: #55ff55;
       text-shadow: 3px 3px 0 #1e4613;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     #overlay-sub {
       font-size: 13px;
       color: #ffffff;
-      max-width: 440px;
-      line-height: 1.4;
+      max-width: 460px;
+      line-height: 1.35;
       margin-bottom: 12px;
     }
 
-    .legend-grid {
+    /* Character Picker Cards */
+    .char-picker {
       display: flex;
-      gap: 8px;
+      gap: 10px;
       margin-bottom: 14px;
-      font-size: 11px;
     }
 
-    .legend-item {
-      background: rgba(30, 30, 30, 0.92);
-      border: 2px solid #777;
-      padding: 6px 8px;
+    .char-card {
+      background: #242424;
+      border: 3px solid #666;
+      padding: 8px 12px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      min-width: 96px;
+      transition: transform 0.1s;
+    }
+
+    .char-card.selected {
+      background: #1f4716;
+      border-color: #55ff55;
+      box-shadow: 0 0 12px rgba(85, 255, 85, 0.45);
+      transform: scale(1.05);
+    }
+
+    .char-icon {
+      width: 34px;
+      height: 34px;
+      border: 2px solid #000;
+    }
+
+    .char-name {
+      font-size: 13px;
+      font-weight: bold;
+      color: #fff;
+    }
+
+    .char-item-tag {
+      font-size: 10px;
+      color: #ffff55;
     }
 
     button {
@@ -256,8 +286,8 @@
       border: 3px solid #1e4613;
       border-top-color: #6bc349;
       border-left-color: #6bc349;
-      padding: 12px 22px;
-      font-size: 16px;
+      padding: 12px 26px;
+      font-size: 17px;
       font-weight: bold;
       cursor: pointer;
     }
@@ -314,31 +344,39 @@
       </div>
     </div>
 
-    <!-- Right: Minecraft 3D-Perspective Runner -->
+    <!-- Right: Arcade Runner Stage -->
     <div id="game-panel">
       <div id="hud-top">
         <div class="hud-box">NYAWA: <span id="hearts-display">♥♥♥</span></div>
-        <div class="hud-box"><span id="action-pill">CENTER | RUN</span></div>
-        <div class="hud-box">EMERALDS: <span id="score-display">0</span></div>
+        <div class="hud-box">BEST: <span id="best-display">0</span></div>
+        <div class="hud-box"><span id="item-label">EMERALDS</span>: <span id="score-display">0</span></div>
       </div>
 
       <canvas id="game-canvas"></canvas>
 
       <div id="overlay-screen">
-        <div id="overlay-title">MINECRAFT MOTION RUNNER</div>
+        <div id="overlay-title">CHOOSE YOUR HERO!</div>
         <div id="overlay-sub">
-          Tap <strong>1. CAMERA</strong> & <strong>2. CALIBRATE</strong> for TV motion play—or tap <strong>PLAY NOW</strong> and <strong>Swipe</strong> on your iPhone screen to test!
+          Tap a character below, then hit <strong>PLAY NOW</strong>! (Swipe on iPhone or use TV Camera Motion)
         </div>
 
-        <div class="legend-grid">
-          <div class="legend-item" style="border-color:#55ff55;">
-            <strong style="color:#55ff55;">CREEPER</strong><br/>Move LEFT / RIGHT
+        <div class="char-picker">
+          <div class="char-card selected" data-char="steve">
+            <div class="char-icon" style="background: linear-gradient(180deg, #3b2313 25%, #d29b76 25%, #d29b76 60%, #00aaaa 60%);"></div>
+            <div class="char-name">STEVE</div>
+            <div class="char-item-tag">Emeralds</div>
           </div>
-          <div class="legend-item" style="border-color:#ff7700;">
-            <strong style="color:#ff7700;">LAVA PIT</strong><br/>JUMP Up!
+
+          <div class="char-card" data-char="alex">
+            <div class="char-icon" style="background: linear-gradient(180deg, #d96b27 28%, #f3c69f 28%, #f3c69f 60%, #5b9e32 60%);"></div>
+            <div class="char-name">ALEX</div>
+            <div class="char-item-tag">Emeralds</div>
           </div>
-          <div class="legend-item" style="border-color:#55ffff;">
-            <strong style="color:#55ffff;">GHAST</strong><br/>DUCK (Tunduk)!
+
+          <div class="char-card" data-char="sonic">
+            <div class="char-icon" style="background: radial-gradient(circle at 50% 45%, #1d63ff 55%, #f5c396 56%, #f5c396 72%, #e52521 73%); border-radius: 50%;"></div>
+            <div class="char-name">SONIC</div>
+            <div class="char-item-tag">Gold Rings</div>
           </div>
         </div>
 
@@ -368,10 +406,12 @@
     const overlayTitle = document.getElementById("overlay-title");
     const overlaySub = document.getElementById("overlay-sub");
     const playBtn = document.getElementById("play-btn");
+    const charCards = document.querySelectorAll(".char-card");
 
     const heartsDisplay = document.getElementById("hearts-display");
     const scoreDisplay = document.getElementById("score-display");
-    const actionPill = document.getElementById("action-pill");
+    const bestDisplay = document.getElementById("best-display");
+    const itemLabel = document.getElementById("item-label");
 
     const speedSlider = document.getElementById("speed-slider");
     const speedVal = document.getElementById("speed-val");
@@ -379,6 +419,22 @@
     const latVal = document.getElementById("lat-val");
     const vertSlider = document.getElementById("vert-slider");
     const vertVal = document.getElementById("vert-val");
+
+    // --- Character Selection & Saved High Score ---
+    let selectedChar = "steve";
+    let bestScore = parseInt(localStorage.getItem("motionRunnerBest") || "0", 10);
+    bestDisplay.textContent = bestScore;
+
+    charCards.forEach((card) => {
+      card.addEventListener("click", () => {
+        unlockAudio();
+        sfx.beep();
+        charCards.forEach((c) => c.classList.remove("selected"));
+        card.classList.add("selected");
+        selectedChar = card.dataset.char;
+        itemLabel.textContent = selectedChar === "sonic" ? "RINGS" : "EMERALDS";
+      });
+    });
 
     // --- Keep iPhone Screen Awake During TV Mirroring ---
     async function requestWakeLock() {
@@ -420,20 +476,42 @@
     }
 
     const sfx = {
-      beep: () => playTone(440, "sine", 0.12),
-      jump: () => playTone(260, "square", 0.18, 520),
+      beep: () => playTone(440, "sine", 0.1),
+      jump: () => playTone(260, "square", 0.18, 540),
       duck: () => playTone(220, "triangle", 0.15, 110),
-      emerald: () => {
-        playTone(587, "sine", 0.1);
-        setTimeout(() => playTone(880, "sine", 0.18), 70);
+      collect: () => {
+        if (selectedChar === "sonic") {
+          playTone(987, "sine", 0.08);
+          setTimeout(() => playTone(1318, "sine", 0.18), 65);
+        } else {
+          playTone(587, "sine", 0.1);
+          setTimeout(() => playTone(880, "sine", 0.18), 70);
+        }
       },
       hit: () => playTone(140, "sawtooth", 0.35, 55),
-      gameOver: () => {
-        playTone(300, "sawtooth", 0.2);
-        setTimeout(() => playTone(220, "sawtooth", 0.2), 180);
-        setTimeout(() => playTone(140, "sawtooth", 0.4), 360);
+      celebrate: () => {
+        [523, 659, 784, 1046].forEach((note, idx) => {
+          setTimeout(() => playTone(note, "triangle", 0.22), idx * 120);
+        });
       }
     };
+
+    // --- Confetti Particles ---
+    let confetti = [];
+    function spawnConfetti() {
+      const colors = ["#55ff55", "#ffff55", "#55ffff", "#ff55ff", "#ff5555", "#ffd700"];
+      confetti = [];
+      for (let i = 0; i < 65; i++) {
+        confetti.push({
+          x: Math.random() * gameCanvas.width,
+          y: -20 - Math.random() * 150,
+          vx: (Math.random() - 0.5) * 3,
+          vy: 2 + Math.random() * 3.5,
+          size: 7 + Math.random() * 7,
+          color: colors[Math.floor(Math.random() * colors.length)]
+        });
+      }
+    }
 
     // --- Game State ---
     let gameRunning = false;
@@ -568,7 +646,6 @@
       }
     });
 
-    // 3-Second Countdown Calibration so you can step back into position!
     calibrateBtn.addEventListener("click", () => {
       unlockAudio();
       calibrateBtn.disabled = true;
@@ -590,7 +667,7 @@
             centerX = latestBodyX;
             centerY = latestBodyY;
             camLabel.textContent = "CALIBRATED!";
-            sfx.emerald();
+            sfx.collect();
           } else {
             camLabel.textContent = "NO BODY FOUND";
           }
@@ -630,7 +707,6 @@
         const results = poseLandmarker.detectForVideo(video, now);
         poseCtx.clearRect(0, 0, poseCanvas.width, poseCanvas.height);
 
-        // Draw yellow calibration target
         const cx = centerX * poseCanvas.width;
         const cy = centerY * poseCanvas.height;
         poseCtx.strokeStyle = "#ffff55";
@@ -665,6 +741,7 @@
       score = 0;
       invulnTimer = 0;
       entities = [];
+      confetti = [];
       spawnTimer = 0;
       playerLane = 0;
       visualLaneX = 0;
@@ -679,8 +756,7 @@
     function updateHUD() {
       heartsDisplay.textContent = "♥".repeat(Math.max(0, lives)) + "♡".repeat(Math.max(0, 3 - lives));
       scoreDisplay.textContent = score;
-      const laneName = playerLane === -1 ? "LEFT" : playerLane === 1 ? "RIGHT" : "CENTER";
-      actionPill.textContent = `${laneName} | ${playerAction}`;
+      bestDisplay.textContent = bestScore;
     }
 
     function spawnWave() {
@@ -691,7 +767,7 @@
       if (pattern < 0.45) {
         lanes.forEach((l) => {
           if (l === safeLane) {
-            entities.push({ lane: l, z: 0.0, type: "emerald", collected: false });
+            entities.push({ lane: l, z: 0.0, type: "reward", collected: false });
           } else if (Math.random() < 0.7) {
             entities.push({ lane: l, z: 0.0, type: "creeper", collected: false });
           }
@@ -717,7 +793,8 @@
     function drawWorld(w, h) {
       const horizonY = h * 0.36;
 
-      ctx.fillStyle = "#78a7ff";
+      // Sky (Brighter blue for Sonic, classic sky blue for Minecraft)
+      ctx.fillStyle = selectedChar === "sonic" ? "#4da6ff" : "#78a7ff";
       ctx.fillRect(0, 0, w, horizonY);
 
       ctx.fillStyle = "#fff59d";
@@ -726,12 +803,14 @@
       ctx.fillRect(w * 0.15, h * 0.09, 85, 22);
       ctx.fillRect(w * 0.52, h * 0.13, 95, 20);
 
-      ctx.fillStyle = "#4d7a28";
+      // Grass Field Base
+      ctx.fillStyle = selectedChar === "sonic" ? "#2eb82e" : "#4d7a28";
       ctx.fillRect(0, horizonY, w, h - horizonY);
 
+      // Perspective 3-Lane Track (Checkered Green Hill style for Sonic, Dirt/Stone for Minecraft)
       const topHalfW = w * 0.08;
       const botHalfW = w * 0.44;
-      ctx.fillStyle = "#6e5036";
+      ctx.fillStyle = selectedChar === "sonic" ? "#b86b28" : "#6e5036";
       ctx.beginPath();
       ctx.moveTo(w * 0.5 - topHalfW, horizonY);
       ctx.lineTo(w * 0.5 + topHalfW, horizonY);
@@ -751,7 +830,7 @@
         const hw1 = topHalfW + p1 * (botHalfW - topHalfW);
         const hw2 = topHalfW + p2 * (botHalfW - topHalfW);
 
-        ctx.fillStyle = "rgba(0, 0, 0, 0.14)";
+        ctx.fillStyle = selectedChar === "sonic" ? "rgba(255, 200, 80, 0.22)" : "rgba(0, 0, 0, 0.14)";
         ctx.beginPath();
         ctx.moveTo(w * 0.5 - hw1, y1);
         ctx.lineTo(w * 0.5 + hw1, y1);
@@ -790,6 +869,14 @@
         ctx.fillRect(x - size * 0.65, y - size * 0.25, size * 1.3, size * 0.32);
         ctx.fillStyle = "#ffae00";
         ctx.fillRect(x - size * 0.45, y - size * 0.18, size * 0.9, size * 0.16);
+
+        // Kid-Friendly Visual Prompt: ⬆ JUMP!
+        if (ent.z > 0.25 && ent.z < 0.85) {
+          ctx.fillStyle = "#ffff55";
+          ctx.font = `bold ${Math.max(12, Math.floor(20 * scale))}px Courier New`;
+          ctx.textAlign = "center";
+          ctx.fillText("⬆ JUMP!", x, y - size * 0.55);
+        }
       } else if (ent.type === "ghast") {
         const floatY = y - size * 1.45;
         ctx.fillStyle = "#f2f2f2";
@@ -803,19 +890,37 @@
         ctx.fillStyle = "#d32f2f";
         ctx.fillRect(x - size * 0.3, floatY - size * 0.45, size * 0.18, size * 0.12);
         ctx.fillRect(x + size * 0.12, floatY - size * 0.45, size * 0.18, size * 0.12);
-      } else if (ent.type === "emerald") {
+
+        // Kid-Friendly Visual Prompt: ⬇ DUCK!
+        if (ent.z > 0.25 && ent.z < 0.85) {
+          ctx.fillStyle = "#55ffff";
+          ctx.font = `bold ${Math.max(12, Math.floor(20 * scale))}px Courier New`;
+          ctx.textAlign = "center";
+          ctx.fillText("⬇ DUCK!", x, y - size * 0.35);
+        }
+      } else if (ent.type === "reward") {
         const bob = Math.sin(performance.now() * 0.008) * 6 * scale;
-        ctx.fillStyle = "#17dd62";
-        ctx.beginPath();
-        ctx.moveTo(x, y - size * 0.95 + bob);
-        ctx.lineTo(x + size * 0.28, y - size * 0.65 + bob);
-        ctx.lineTo(x, y - size * 0.35 + bob);
-        ctx.lineTo(x - size * 0.28, y - size * 0.65 + bob);
-        ctx.closePath();
-        ctx.fill();
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 2;
-        ctx.stroke();
+        if (selectedChar === "sonic") {
+          // Spinning Gold Ring
+          ctx.strokeStyle = "#ffd700";
+          ctx.lineWidth = Math.max(3, 6 * scale);
+          ctx.beginPath();
+          ctx.arc(x, y - size * 0.65 + bob, size * 0.28, 0, Math.PI * 2);
+          ctx.stroke();
+        } else {
+          // Green Emerald Gem
+          ctx.fillStyle = "#17dd62";
+          ctx.beginPath();
+          ctx.moveTo(x, y - size * 0.95 + bob);
+          ctx.lineTo(x + size * 0.28, y - size * 0.65 + bob);
+          ctx.lineTo(x, y - size * 0.35 + bob);
+          ctx.lineTo(x - size * 0.28, y - size * 0.65 + bob);
+          ctx.closePath();
+          ctx.fill();
+          ctx.strokeStyle = "#ffffff";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
       }
     }
 
@@ -831,25 +936,86 @@
       if (playerAction === "DUCK") heightMult = 0.52;
 
       const py = y - jumpOffset;
-      const pw = 50;
-      const ph = 96 * heightMult;
 
+      // Ground Shadow
       ctx.fillStyle = "rgba(0,0,0,0.35)";
       ctx.beginPath();
       ctx.ellipse(x, y + 4, 26, 8, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.fillStyle = "#2f2f9e";
-      ctx.fillRect(x - pw * 0.38, py - ph * 0.32, pw * 0.76, ph * 0.32);
+      if (selectedChar === "sonic") {
+        // Sonic curls into a spinning blue Spin-Dash ball when jumping or ducking!
+        if (playerAction === "JUMP" || playerAction === "DUCK") {
+          ctx.fillStyle = "#1d63ff";
+          ctx.beginPath();
+          ctx.arc(x, py - 26, 26, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = "#80b3ff";
+          ctx.lineWidth = 3;
+          ctx.stroke();
+        } else {
+          // Running Sonic
+          // Red Shoes
+          ctx.fillStyle = "#e52521";
+          ctx.fillRect(x - 20, py - 14, 16, 14);
+          ctx.fillRect(x + 4, py - 14, 16, 14);
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(x - 16, py - 10, 8, 4);
+          ctx.fillRect(x + 8, py - 10, 8, 4);
 
-      ctx.fillStyle = "#00aaaa";
-      ctx.fillRect(x - pw * 0.42, py - ph * 0.68, pw * 0.84, ph * 0.36);
+          // Blue Body & Belly
+          ctx.fillStyle = "#1d63ff";
+          ctx.fillRect(x - 18, py - 52, 36, 38);
+          ctx.fillStyle = "#f5c396";
+          ctx.beginPath();
+          ctx.arc(x, py - 33, 12, 0, Math.PI * 2);
+          ctx.fill();
 
-      const headSize = 34;
-      ctx.fillStyle = "#d29b76";
-      ctx.fillRect(x - headSize / 2, py - ph * 0.68 - headSize, headSize, headSize);
-      ctx.fillStyle = "#3b2313";
-      ctx.fillRect(x - headSize / 2, py - ph * 0.68 - headSize, headSize, 8);
+          // Spiky Blue Head
+          ctx.fillStyle = "#1d63ff";
+          ctx.beginPath();
+          ctx.arc(x, py - 70, 22, 0, Math.PI * 2);
+          ctx.fill();
+          // Quills
+          ctx.beginPath();
+          ctx.moveTo(x - 18, py - 78);
+          ctx.lineTo(x - 32, py - 72);
+          ctx.lineTo(x - 18, py - 64);
+          ctx.moveTo(x + 18, py - 78);
+          ctx.lineTo(x + 32, py - 72);
+          ctx.lineTo(x + 18, py - 64);
+          ctx.fill();
+        }
+      } else {
+        // Minecraft Steve or Alex
+        const pw = 50;
+        const ph = 96 * heightMult;
+        const isAlex = selectedChar === "alex";
+
+        // Pants
+        ctx.fillStyle = isAlex ? "#4a3b2c" : "#2f2f9e";
+        ctx.fillRect(x - pw * 0.38, py - ph * 0.32, pw * 0.76, ph * 0.32);
+
+        // Shirt
+        ctx.fillStyle = isAlex ? "#5b9e32" : "#00aaaa";
+        ctx.fillRect(x - pw * 0.42, py - ph * 0.68, pw * 0.84, ph * 0.36);
+
+        // Head & Hair
+        const headSize = 34;
+        ctx.fillStyle = isAlex ? "#f3c69f" : "#d29b76";
+        ctx.fillRect(x - headSize / 2, py - ph * 0.68 - headSize, headSize, headSize);
+        ctx.fillStyle = isAlex ? "#d96b27" : "#3b2313";
+        ctx.fillRect(x - headSize / 2, py - ph * 0.68 - headSize, headSize, isAlex ? 12 : 8);
+      }
+    }
+
+    function drawConfetti() {
+      confetti.forEach((p) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, p.size, p.size);
+      });
     }
 
     let lastFrameTime = performance.now();
@@ -882,10 +1048,14 @@
           ent.z += currentSpeedRate;
 
           if (!ent.collected && ent.z >= 0.84 && ent.z <= 0.94 && ent.lane === playerLane) {
-            if (ent.type === "emerald") {
+            if (ent.type === "reward") {
               ent.collected = true;
               score += 1;
-              sfx.emerald();
+              if (score > bestScore) {
+                bestScore = score;
+                localStorage.setItem("motionRunnerBest", bestScore.toString());
+              }
+              sfx.collect();
             } else if (invulnTimer <= 0) {
               const dodgedLava = ent.type === "lava" && playerAction === "JUMP";
               const dodgedGhast = ent.type === "ghast" && playerAction === "DUCK";
@@ -898,10 +1068,12 @@
 
                 if (lives <= 0) {
                   gameRunning = false;
-                  sfx.gameOver();
-                  overlayTitle.textContent = "GAME OVER!";
-                  overlayTitle.style.color = "#ff5555";
-                  overlaySub.innerHTML = `Awesome run! You collected <strong>${score} Emeralds</strong>!`;
+                  sfx.celebrate();
+                  spawnConfetti();
+                  const unit = selectedChar === "sonic" ? "Gold Rings" : "Emeralds";
+                  overlayTitle.textContent = "AWESOME RUN!";
+                  overlayTitle.style.color = "#ffff55";
+                  overlaySub.innerHTML = `You collected <strong>${score} ${unit}</strong>! (Best: ${bestScore})`;
                   playBtn.textContent = "↻ PLAY AGAIN";
                   overlayScreen.classList.remove("hidden");
                 }
@@ -919,6 +1091,7 @@
       drawWorld(w, h);
       entities.forEach((ent) => drawEntity(ent, w, h));
       drawPlayer(w, h);
+      if (confetti.length > 0) drawConfetti();
 
       requestAnimationFrame(gameLoop);
     }
