@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Temple Motion Runner 3D</title>
+  <title>Temple Motion Runner 3D - Studio Edition</title>
   <style>
     * {
       box-sizing: border-box;
@@ -19,7 +19,7 @@
     }
 
     html, body {
-      background: #090d16;
+      background: #38bdf8;
       color: #ffffff;
       overflow: hidden;
       width: 100vw;
@@ -32,7 +32,7 @@
       display: none;
       position: fixed;
       inset: 0;
-      background: radial-gradient(circle at center, #1a2639, #090d16);
+      background: radial-gradient(circle at center, #0284c7, #0f172a);
       z-index: 9999;
       flex-direction: column;
       align-items: center;
@@ -45,7 +45,6 @@
       #rotate-warning { display: flex; }
     }
 
-    /* Fullscreen 3D Viewport */
     #game-container {
       position: relative;
       width: 100%;
@@ -58,7 +57,7 @@
       display: block;
     }
 
-    /* Glassmorphism Top HUD */
+    /* Sleek Glassmorphism Top HUD */
     #hud-top {
       position: absolute;
       top: max(12px, env(safe-area-inset-top));
@@ -69,61 +68,71 @@
       align-items: center;
       pointer-events: none;
       z-index: 20;
+      gap: 8px;
+    }
+
+    .hud-group {
+      display: flex;
+      gap: 8px;
     }
 
     .glass-pill {
-      background: rgba(15, 23, 42, 0.65);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(15, 23, 42, 0.58);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.25);
       border-radius: 999px;
-      padding: 8px 18px;
+      padding: 7px 16px;
       display: flex;
       align-items: center;
-      gap: 10px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      gap: 8px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
       font-weight: 800;
-      font-size: 16px;
-      letter-spacing: 0.5px;
+      font-size: 14px;
+      letter-spacing: 0.4px;
     }
 
     #hearts-display {
       color: #ff4757;
-      font-size: 22px;
+      font-size: 20px;
       text-shadow: 0 0 10px rgba(255, 71, 87, 0.7);
+    }
+
+    #dist-display {
+      color: #38bdf8;
+      font-size: 16px;
     }
 
     #score-display {
       color: #2ed573;
-      font-size: 20px;
-      text-shadow: 0 0 10px rgba(46, 213, 115, 0.6);
+      font-size: 18px;
     }
 
     #best-display {
-      color: #ffa502;
+      color: #fbbf24;
     }
 
-    /* Floating Picture-in-Picture Camera Widget (Bottom Left) */
+    /* Floating Picture-in-Picture Camera Widget */
     #cam-pip {
       position: absolute;
       bottom: max(14px, env(safe-area-inset-bottom));
       left: max(16px, env(safe-area-inset-left));
-      width: 240px;
-      background: rgba(15, 23, 42, 0.78);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.22);
+      width: 230px;
+      background: rgba(15, 23, 42, 0.72);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.25);
       border-radius: 16px;
       overflow: hidden;
       z-index: 25;
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
     }
 
     #cam-video-box {
       position: relative;
       width: 100%;
-      height: 118px;
-      background: #05080f;
+      height: 110px;
+      background: #0f172a;
     }
 
     video, #pose-canvas {
@@ -140,7 +149,7 @@
       top: 6px;
       left: 8px;
       background: rgba(0, 0, 0, 0.65);
-      color: #2ed573;
+      color: #4ade80;
       font-size: 10px;
       font-weight: 700;
       padding: 3px 8px;
@@ -154,9 +163,9 @@
       background: rgba(0, 0, 0, 0.6);
       align-items: center;
       justify-content: center;
-      font-size: 48px;
+      font-size: 46px;
       font-weight: 900;
-      color: #ffa502;
+      color: #fbbf24;
     }
 
     #cam-drawer {
@@ -173,8 +182,8 @@
 
     .pip-btn {
       flex: 1;
-      background: linear-gradient(135deg, #2ed573, #1eae58);
-      color: #06180d;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: #ffffff;
       border: none;
       border-radius: 8px;
       padding: 7px 4px;
@@ -184,8 +193,7 @@
     }
 
     .pip-btn.secondary {
-      background: linear-gradient(135deg, #3742fa, #5352ed);
-      color: #ffffff;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
     }
 
     .pip-btn:disabled {
@@ -197,20 +205,62 @@
       justify-content: space-between;
       align-items: center;
       font-size: 10px;
-      color: #cbd5e1;
+      color: #e2e8f0;
       font-weight: 600;
     }
 
     .mini-slider input {
-      width: 95px;
-      accent-color: #2ed573;
+      width: 90px;
+      accent-color: #22c55e;
     }
 
-    /* AAA Title / Hero Selection Overlay */
+    /* Callout Banners (Action Warning & Rainbow Milestone) */
+    #action-banner {
+      position: absolute;
+      top: 62px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 20px;
+      font-weight: 900;
+      padding: 6px 20px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.78);
+      border: 2px solid #fbbf24;
+      color: #fbbf24;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+      z-index: 22;
+    }
+
+    #rainbow-banner {
+      position: absolute;
+      top: 108px;
+      left: 50%;
+      transform: translateX(-50%) scale(0.8);
+      font-size: 26px;
+      font-weight: 900;
+      padding: 8px 26px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981, #3b82f6, #8b5cf6);
+      color: #ffffff;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.5);
+      pointer-events: none;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 23;
+    }
+
+    #rainbow-banner.show {
+      opacity: 1;
+      transform: translateX(-50%) scale(1);
+    }
+
+    /* Hero Selection & Celebration Overlay */
     #overlay-screen {
       position: absolute;
       inset: 0;
-      background: radial-gradient(circle at center, rgba(15, 23, 42, 0.72), rgba(5, 8, 17, 0.92));
+      background: radial-gradient(circle at center, rgba(14, 116, 144, 0.75), rgba(15, 23, 42, 0.92));
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
       display: flex;
@@ -229,7 +279,7 @@
     #overlay-title {
       font-size: 34px;
       font-weight: 900;
-      background: linear-gradient(90deg, #2ed573, #7bed9f, #ffa502);
+      background: linear-gradient(90deg, #4ade80, #facc15, #38bdf8);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       letter-spacing: 1px;
@@ -238,7 +288,7 @@
 
     #overlay-sub {
       font-size: 14px;
-      color: #cbd5e1;
+      color: #f1f5f9;
       max-width: 500px;
       margin-bottom: 16px;
     }
@@ -251,7 +301,7 @@
 
     .hero-card {
       background: rgba(30, 41, 59, 0.85);
-      border: 2px solid rgba(255, 255, 255, 0.15);
+      border: 2px solid rgba(255, 255, 255, 0.18);
       border-radius: 16px;
       padding: 12px 18px;
       cursor: pointer;
@@ -264,10 +314,10 @@
     }
 
     .hero-card.selected {
-      border-color: #2ed573;
-      background: rgba(46, 213, 115, 0.18);
+      border-color: #4ade80;
+      background: rgba(74, 222, 128, 0.22);
       transform: translateY(-4px) scale(1.04);
-      box-shadow: 0 10px 25px rgba(46, 213, 115, 0.35);
+      box-shadow: 0 10px 25px rgba(74, 222, 128, 0.35);
     }
 
     .hero-avatar {
@@ -284,52 +334,33 @@
 
     .hero-tag {
       font-size: 11px;
-      color: #ffa502;
+      color: #facc15;
       font-weight: 700;
     }
 
     #play-btn {
-      background: linear-gradient(135deg, #2ed573, #10ac84);
-      color: #051b0e;
+      background: linear-gradient(135deg, #22c55e, #10b981);
+      color: #052e16;
       border: none;
       border-radius: 999px;
       padding: 14px 38px;
       font-size: 18px;
       font-weight: 900;
       letter-spacing: 1px;
-      box-shadow: 0 10px 30px rgba(46, 213, 115, 0.45);
+      box-shadow: 0 10px 28px rgba(34, 197, 94, 0.45);
       cursor: pointer;
     }
 
     #play-btn:active {
       transform: scale(0.96);
     }
-
-    /* Big Center Action Callout Banner */
-    #action-banner {
-      position: absolute;
-      top: 64px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 24px;
-      font-weight: 900;
-      padding: 6px 22px;
-      border-radius: 999px;
-      background: rgba(0, 0, 0, 0.65);
-      border: 2px solid #ffa502;
-      color: #ffa502;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.15s ease;
-      z-index: 22;
-    }
   </style>
 </head>
 <body>
 
   <div id="rotate-warning">
-    <h1 style="color:#2ed573; margin-bottom:10px;">ROTATE IPHONE TO LANDSCAPE</h1>
-    <p style="color:#cbd5e1;">Turn off Portrait Orientation Lock in Control Center to play in 16:9 widescreen.</p>
+    <h1 style="color:#4ade80; margin-bottom:10px;">ROTATE IPHONE TO LANDSCAPE</h1>
+    <p style="color:#e2e8f0;">Turn off Portrait Orientation Lock in Control Center to play in 16:9 widescreen.</p>
   </div>
 
   <div id="game-container">
@@ -337,12 +368,18 @@
 
     <!-- Top Glass HUD -->
     <div id="hud-top">
-      <div class="glass-pill">NYAWA <span id="hearts-display">♥♥♥</span></div>
-      <div class="glass-pill">BEST <span id="best-display">0</span></div>
-      <div class="glass-pill"><span id="item-label">EMERALDS</span> <span id="score-display">0</span></div>
+      <div class="hud-group">
+        <div class="glass-pill">NYAWA <span id="hearts-display">♥♥♥</span></div>
+        <div class="glass-pill">DIST <span id="dist-display">0m</span></div>
+      </div>
+      <div class="hud-group">
+        <div class="glass-pill">BEST <span id="best-display">0</span></div>
+        <div class="glass-pill"><span id="item-label">EMERALDS</span> <span id="score-display">0</span></div>
+      </div>
     </div>
 
     <div id="action-banner">⬆ JUMP OVER FLAMES!</div>
+    <div id="rainbow-banner">🌈 250m RAINBOW MILESTONE!</div>
 
     <!-- Floating Picture-in-Picture Camera Widget -->
     <div id="cam-pip">
@@ -358,7 +395,7 @@
           <button id="calibrate-btn" class="pip-btn secondary" disabled>2. CALIBRATE</button>
         </div>
         <div class="mini-slider">
-          <span>Speed: <strong id="speed-val">4yo</strong></span>
+          <span>Speed: <strong id="speed-val">4yo (Gentle)</strong></span>
           <input type="range" id="speed-slider" min="1" max="3" step="1" value="1" />
         </div>
         <div class="mini-slider">
@@ -376,20 +413,20 @@
     <div id="overlay-screen">
       <div id="overlay-title">TEMPLE RUNNER 3D</div>
       <div id="overlay-sub">
-        Dodge <strong>Temple Maze Gates</strong>, jump over <strong>Flamethrowers</strong>, and duck under <strong>Magma Beams</strong>!
+        Run through <strong>Temple Maze Gates</strong>, jump over <strong>Flamethrowers</strong>, duck under <strong>Magma Beams</strong>, and reach the <strong>Rainbow</strong>!
       </div>
 
       <div class="hero-grid">
         <div class="hero-card selected" data-char="steve">
           <div class="hero-avatar" style="background: linear-gradient(180deg, #3b2313 28%, #d29b76 28%, #d29b76 62%, #00aaaa 62%);"></div>
           <div class="hero-name">STEVE</div>
-          <div class="hero-tag">Voxel World</div>
+          <div class="hero-tag">Sunny Valley</div>
         </div>
 
         <div class="hero-card" data-char="alex">
           <div class="hero-avatar" style="background: linear-gradient(180deg, #d96b27 30%, #f3c69f 30%, #f3c69f 62%, #5b9e32 62%);"></div>
           <div class="hero-name">ALEX</div>
-          <div class="hero-tag">Voxel World</div>
+          <div class="hero-tag">Sunny Valley</div>
         </div>
 
         <div class="hero-card" data-char="sonic">
@@ -403,7 +440,6 @@
     </div>
   </div>
 
-  <!-- Three.js + MediaPipe Modules -->
   <script type="module">
     import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js";
     import {
@@ -419,8 +455,10 @@
     const playBtn = document.getElementById("play-btn");
     const heroCards = document.querySelectorAll(".hero-card");
     const actionBanner = document.getElementById("action-banner");
+    const rainbowBanner = document.getElementById("rainbow-banner");
 
     const heartsDisplay = document.getElementById("hearts-display");
+    const distDisplay = document.getElementById("dist-display");
     const scoreDisplay = document.getElementById("score-display");
     const bestDisplay = document.getElementById("best-display");
     const itemLabel = document.getElementById("item-label");
@@ -457,7 +495,7 @@
         osc.type = type;
         osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
         if (slideTo) osc.frequency.exponentialRampToValueAtTime(slideTo, audioCtx.currentTime + duration);
-        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.14, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
@@ -474,6 +512,9 @@
         playTone(660, "sine", 0.09);
         setTimeout(() => playTone(990, "sine", 0.18), 65);
       },
+      rainbow: () => {
+        [523, 587, 659, 784, 880, 1046].forEach((n, i) => setTimeout(() => playTone(n, "sine", 0.25), i * 80));
+      },
       hit: () => playTone(130, "sawtooth", 0.35, 50),
       celebrate: () => [523, 659, 784, 1046].forEach((n, i) => setTimeout(() => playTone(n, "triangle", 0.25), i * 110))
     };
@@ -482,7 +523,24 @@
       try { if ("wakeLock" in navigator) await navigator.wakeLock.request("screen"); } catch (e) {}
     }
 
-    // --- Procedural High-Detail 3D Textures ---
+    // --- Procedural 3D Textures (Sky Gradient, Track, Hazard Stripes) ---
+    function createSkyTexture() {
+      const c = document.createElement("canvas");
+      c.width = 32;
+      c.height = 512;
+      const g = c.getContext("2d");
+      const grad = g.createLinearGradient(0, 0, 0, 512);
+      grad.addColorStop(0.0, "#0284c7"); // Crisp Azure Sky Top
+      grad.addColorStop(0.45, "#38bdf8"); // Bright Midday Blue
+      grad.addColorStop(0.75, "#bae6fd"); // Soft Horizon Mist
+      grad.addColorStop(1.0, "#e0f2fe");
+      g.fillStyle = grad;
+      g.fillRect(0, 0, 32, 512);
+      const tex = new THREE.CanvasTexture(c);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      return tex;
+    }
+
     function createTrackTexture(isSonic) {
       const c = document.createElement("canvas");
       c.width = 512;
@@ -490,39 +548,63 @@
       const g = c.getContext("2d");
 
       if (isSonic) {
-        g.fillStyle = "#b86b28";
+        g.fillStyle = "#c27027";
         g.fillRect(0, 0, 512, 512);
-        g.fillStyle = "#944e14";
+        g.fillStyle = "#9a5012";
         for (let y = 0; y < 512; y += 64) {
           for (let x = 0; x < 512; x += 64) {
             if ((x / 64 + y / 64) % 2 === 0) g.fillRect(x, y, 64, 64);
           }
         }
-        g.fillStyle = "#ffd700";
-        g.fillRect(0, 0, 14, 512);
-        g.fillRect(498, 0, 14, 512);
+        g.fillStyle = "#facc15";
+        g.fillRect(0, 0, 16, 512);
+        g.fillRect(496, 0, 16, 512);
       } else {
-        // Rich Stone Temple / Cobblestone Voxel Texture
-        g.fillStyle = "#4b5563";
+        // Warm Temple Sandstone & Cobble Road with clear forward-moving planks
+        g.fillStyle = "#64748b";
         g.fillRect(0, 0, 512, 512);
-        for (let i = 0; i < 450; i++) {
-          g.fillStyle = Math.random() > 0.5 ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.14)";
-          g.fillRect(Math.random() * 512, Math.random() * 512, 24, 24);
+        for (let y = 0; y < 512; y += 64) {
+          g.fillStyle = (y / 64) % 2 === 0 ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.12)";
+          g.fillRect(16, y, 480, 58);
         }
-        // Glowing Emerald Lane Trim
-        g.fillStyle = "#2ed573";
-        g.fillRect(0, 0, 12, 512);
-        g.fillRect(500, 0, 12, 512);
+        // Emerald & Gold Curb Trim
+        g.fillStyle = "#22c55e";
+        g.fillRect(0, 0, 16, 512);
+        g.fillRect(496, 0, 16, 512);
       }
-      // Subtle lane lines
-      g.fillStyle = "rgba(255,255,255,0.22)";
-      g.fillRect(170, 0, 4, 512);
-      g.fillRect(338, 0, 4, 512);
+      // Crisp Lane Guide Lines
+      g.fillStyle = "rgba(255, 255, 255, 0.32)";
+      g.fillRect(170, 0, 5, 512);
+      g.fillRect(337, 0, 5, 512);
 
       const tex = new THREE.CanvasTexture(c);
       tex.wrapS = THREE.RepeatWrapping;
       tex.wrapT = THREE.RepeatWrapping;
-      tex.repeat.set(1, 14);
+      // 160m length / 16 repeats = 10m per texture tile (matches forward worldSpeed!)
+      tex.repeat.set(1, 16);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      return tex;
+    }
+
+    function createHazardTexture() {
+      const c = document.createElement("canvas");
+      c.width = 256;
+      c.height = 64;
+      const g = c.getContext("2d");
+      g.fillStyle = "#ef4444";
+      g.fillRect(0, 0, 256, 64);
+      g.fillStyle = "#facc15";
+      for (let x = -64; x < 320; x += 32) {
+        g.beginPath();
+        g.moveTo(x, 64);
+        g.lineTo(x + 16, 64);
+        g.lineTo(x + 32, 0);
+        g.lineTo(x + 16, 0);
+        g.closePath();
+        g.fill();
+      }
+      const tex = new THREE.CanvasTexture(c);
+      tex.wrapS = THREE.RepeatWrapping;
       tex.colorSpace = THREE.SRGBColorSpace;
       return tex;
     }
@@ -534,14 +616,15 @@
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.08;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x1b3b6f);
-    scene.fog = new THREE.FogExp2(0x1b3b6f, 0.016);
+    scene.background = createSkyTexture();
+    scene.fog = new THREE.FogExp2(0xbae6fd, 0.0085);
 
-    const camera = new THREE.PerspectiveCamera(58, window.innerWidth / window.innerHeight, 0.1, 160);
-    camera.position.set(0, 5.2, 10.5);
-    camera.lookAt(0, 1.8, -12);
+    const camera = new THREE.PerspectiveCamera(56, window.innerWidth / window.innerHeight, 0.1, 200);
+    camera.position.set(0, 5.0, 10.2);
+    camera.lookAt(0, 1.8, -14);
 
     window.addEventListener("resize", () => {
       camera.aspect = window.innerWidth / window.innerHeight;
@@ -549,95 +632,186 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    // Dramatic 3-Point & Sunlight Illumination
-    const hemiLight = new THREE.HemisphereLight(0x8ec5fc, 0x2d4722, 0.95);
+    // Bright Sunny Lighting
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x4ade80, 1.15);
     scene.add(hemiLight);
 
-    const sunLight = new THREE.DirectionalLight(0xfff4d6, 1.8);
-    sunLight.position.set(14, 26, 16);
+    const sunLight = new THREE.DirectionalLight(0xfffbeb, 1.85);
+    sunLight.position.set(18, 32, 20);
     sunLight.castShadow = true;
     sunLight.shadow.mapSize.set(1024, 1024);
     sunLight.shadow.camera.near = 2;
-    sunLight.shadow.camera.far = 90;
-    const d = 22;
+    sunLight.shadow.camera.far = 110;
+    const d = 24;
     sunLight.shadow.camera.left = -d;
     sunLight.shadow.camera.right = d;
     sunLight.shadow.camera.top = d;
     sunLight.shadow.camera.bottom = -d;
     scene.add(sunLight);
 
-    // 3D Track & Scenic Side Terrain
+    // Glowing Sun Disc in Sky
+    const sunDisc = new THREE.Mesh(
+      new THREE.CircleGeometry(7, 32),
+      new THREE.MeshBasicMaterial({ color: 0xfef08a, fog: false })
+    );
+    sunDisc.position.set(28, 34, -120);
+    scene.add(sunDisc);
+
+    // 3D Track & Lush Green Meadow
     const LANE_WIDTH = 3.1;
+    const TRACK_LENGTH = 160;
+    const TRACK_REPEATS = 16;
     let trackTex = createTrackTexture(false);
-    const trackGeo = new THREE.PlaneGeometry(LANE_WIDTH * 3.2, 160);
-    const trackMat = new THREE.MeshStandardMaterial({ map: trackTex, roughness: 0.75, metalness: 0.1 });
+    const trackGeo = new THREE.PlaneGeometry(LANE_WIDTH * 3.2, TRACK_LENGTH);
+    const trackMat = new THREE.MeshStandardMaterial({ map: trackTex, roughness: 0.72, metalness: 0.08 });
     const trackMesh = new THREE.Mesh(trackGeo, trackMat);
     trackMesh.rotation.x = -Math.PI / 2;
     trackMesh.position.z = -65;
     trackMesh.receiveShadow = true;
     scene.add(trackMesh);
 
-    const grassGeo = new THREE.PlaneGeometry(180, 160);
-    const grassMat = new THREE.MeshStandardMaterial({ color: 0x2e6f28, roughness: 0.9 });
+    const grassGeo = new THREE.PlaneGeometry(240, 200);
+    const grassMat = new THREE.MeshStandardMaterial({ color: 0x4ade80, roughness: 0.85 });
     const grassMesh = new THREE.Mesh(grassGeo, grassMat);
     grassMesh.rotation.x = -Math.PI / 2;
-    grassMesh.position.set(0, -0.05, -65);
+    grassMesh.position.set(0, -0.05, -75);
     grassMesh.receiveShadow = true;
     scene.add(grassMesh);
 
-    // Scenic 3D Pillars / Trees along the sides for high-speed depth perception
+    // Distant Stylized Hills on Horizon
+    const hillMat = new THREE.MeshStandardMaterial({ color: 0x22c55e, roughness: 0.9 });
+    [-42, -18, 22, 46].forEach((hx, idx) => {
+      const hill = new THREE.Mesh(new THREE.ConeGeometry(18 + idx * 3, 18 + (idx % 2) * 6, 7), hillMat);
+      hill.position.set(hx, 8, -135);
+      scene.add(hill);
+    });
+
+    // Scenic Trees & Flowers Along Roadside
     const sceneryGroup = new THREE.Group();
     scene.add(sceneryGroup);
-    const treeTrunkMat = new THREE.MeshStandardMaterial({ color: 0x5c3a21 });
-    const treeLeafMat = new THREE.MeshStandardMaterial({ color: 0x2ed573, roughness: 0.6 });
+    const treeTrunkMat = new THREE.MeshStandardMaterial({ color: 0x78350f });
+    const treeLeafMat = new THREE.MeshStandardMaterial({ color: 0x16a34a, roughness: 0.6 });
 
     for (let i = 0; i < 24; i++) {
       const zPos = -i * 6.5;
       [-1, 1].forEach((side) => {
         const tree = new THREE.Group();
-        const trunk = new THREE.Mesh(new THREE.BoxGeometry(0.9, 3.2, 0.9), treeTrunkMat);
-        trunk.position.y = 1.6;
+        const trunk = new THREE.Mesh(new THREE.BoxGeometry(0.9, 3.0, 0.9), treeTrunkMat);
+        trunk.position.y = 1.5;
         trunk.castShadow = true;
-        const crown = new THREE.Mesh(new THREE.DodecahedronGeometry(2.1, 0), treeLeafMat);
-        crown.position.y = 4.0;
+        const crown = new THREE.Mesh(new THREE.DodecahedronGeometry(2.0, 1), treeLeafMat);
+        crown.position.y = 3.8;
         crown.castShadow = true;
         tree.add(trunk, crown);
-        tree.position.set(side * (7.5 + Math.random() * 4), 0, zPos);
+        tree.position.set(side * (7.6 + (i % 3) * 1.4), 0, zPos);
         sceneryGroup.add(tree);
       });
     }
 
-    // --- Articulated 3D Hero Rig ---
+    // --- Fluffy 3D Clouds & Animated Flocks of Birds in the Sky ---
+    const clouds = [];
+    const cloudMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, fog: false });
+    for (let i = 0; i < 10; i++) {
+      const cloud = new THREE.Group();
+      const puff1 = new THREE.Mesh(new THREE.SphereGeometry(2.4, 12, 12), cloudMat);
+      const puff2 = new THREE.Mesh(new THREE.SphereGeometry(1.8, 12, 12), cloudMat);
+      puff2.position.set(2.0, -0.3, 0.2);
+      const puff3 = new THREE.Mesh(new THREE.SphereGeometry(1.7, 12, 12), cloudMat);
+      puff3.position.set(-2.0, -0.4, -0.2);
+      cloud.add(puff1, puff2, puff3);
+      cloud.position.set((Math.random() - 0.5) * 90, 16 + Math.random() * 10, -35 - Math.random() * 90);
+      scene.add(cloud);
+      clouds.push({ mesh: cloud, speed: 1.2 + Math.random() * 1.5 });
+    }
+
+    const birds = [];
+    const birdMat = new THREE.MeshBasicMaterial({ color: 0x1e293b, side: THREE.DoubleSide, fog: false });
+    for (let i = 0; i < 7; i++) {
+      const bird = new THREE.Group();
+      const leftWing = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.28), birdMat);
+      leftWing.position.x = -0.45;
+      const rightWing = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.28), birdMat);
+      rightWing.position.x = 0.45;
+      bird.add(leftWing, rightWing);
+      bird.position.set(-45 + Math.random() * 90, 13 + Math.random() * 7, -30 - Math.random() * 75);
+      scene.add(bird);
+      birds.push({
+        group: bird,
+        leftWing,
+        rightWing,
+        speedX: (Math.random() > 0.5 ? 1 : -1) * (4 + Math.random() * 3),
+        phase: Math.random() * Math.PI * 2
+      });
+    }
+
+    // --- 3D Distance Milestone Rainbow Arch ---
+    const rainbowGroup = new THREE.Group();
+    const rainbowColors = [0xef4444, 0xf97316, 0xfacc15, 0x22c55e, 0x3b82f6, 0xa855f7];
+    rainbowColors.forEach((hex, idx) => {
+      const radius = 11.5 - idx * 0.55;
+      const arcGeo = new THREE.TorusGeometry(radius, 0.28, 10, 48, Math.PI);
+      const arcMat = new THREE.MeshBasicMaterial({ color: hex, fog: false });
+      const arc = new THREE.Mesh(arcGeo, arcMat);
+      rainbowGroup.add(arc);
+    });
+    rainbowGroup.visible = false;
+    scene.add(rainbowGroup);
+
+    // --- Detailed Articulated 3D Hero Rig (With Arms, Hair & Sonic Spikes!) ---
     const heroRoot = new THREE.Group();
     scene.add(heroRoot);
 
     const heroBodyMat = new THREE.MeshStandardMaterial({ color: 0x00aaaa, roughness: 0.5 });
     const heroHeadMat = new THREE.MeshStandardMaterial({ color: 0xd29b76, roughness: 0.6 });
+    const heroHairMat = new THREE.MeshStandardMaterial({ color: 0x3b2313, roughness: 0.8 });
     const heroLegMat = new THREE.MeshStandardMaterial({ color: 0x2f2f9e, roughness: 0.7 });
-    const sonicBallMat = new THREE.MeshStandardMaterial({ color: 0x1e90ff, emissive: 0x0a3d91, roughness: 0.3, metalness: 0.3 });
+    const sonicBallMat = new THREE.MeshStandardMaterial({ color: 0x2563eb, emissive: 0x1d4ed8, roughness: 0.25, metalness: 0.3 });
 
-    const leftLeg = new THREE.Mesh(new THREE.BoxGeometry(0.45, 1.0, 0.45), heroLegMat);
-    leftLeg.position.set(-0.26, 0.5, 0);
+    const leftLeg = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.95, 0.42), heroLegMat);
+    leftLeg.position.set(-0.25, 0.48, 0);
     leftLeg.castShadow = true;
 
-    const rightLeg = new THREE.Mesh(new THREE.BoxGeometry(0.45, 1.0, 0.45), heroLegMat);
-    rightLeg.position.set(0.26, 0.5, 0);
+    const rightLeg = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.95, 0.42), heroLegMat);
+    rightLeg.position.set(0.25, 0.48, 0);
     rightLeg.castShadow = true;
 
-    const torso = new THREE.Mesh(new THREE.BoxGeometry(1.05, 1.15, 0.55), heroBodyMat);
-    torso.position.set(0, 1.55, 0);
+    const torso = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.1, 0.52), heroBodyMat);
+    torso.position.set(0, 1.5, 0);
     torso.castShadow = true;
 
-    const head = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.9, 0.9), heroHeadMat);
-    head.position.set(0, 2.6, 0);
-    head.castShadow = true;
+    const leftArm = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.95, 0.36), heroHeadMat);
+    leftArm.position.set(-0.72, 1.52, 0);
+    leftArm.castShadow = true;
+
+    const rightArm = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.95, 0.36), heroHeadMat);
+    rightArm.position.set(0.72, 1.52, 0);
+    rightArm.castShadow = true;
+
+    const headGroup = new THREE.Group();
+    headGroup.position.set(0, 2.52, 0);
+    const headMesh = new THREE.Mesh(new THREE.BoxGeometry(0.88, 0.88, 0.88), heroHeadMat);
+    headMesh.castShadow = true;
+    const hairCap = new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.26, 0.92), heroHairMat);
+    hairCap.position.y = 0.34;
+    headGroup.add(headMesh, hairCap);
+
+    // Sonic Quills (Visible when Sonic is chosen)
+    const sonicSpikes = new THREE.Group();
+    [-0.25, 0.05, 0.32].forEach((sy, idx) => {
+      const spike = new THREE.Mesh(new THREE.ConeGeometry(0.26, 0.85, 6), sonicBallMat);
+      spike.rotation.x = Math.PI * 0.62;
+      spike.position.set(0, sy, 0.55 - idx * 0.06);
+      sonicSpikes.add(spike);
+    });
+    sonicSpikes.visible = false;
+    headGroup.add(sonicSpikes);
 
     const spinBall = new THREE.Mesh(new THREE.SphereGeometry(0.85, 20, 20), sonicBallMat);
     spinBall.position.set(0, 0.85, 0);
     spinBall.castShadow = true;
     spinBall.visible = false;
 
-    heroRoot.add(leftLeg, rightLeg, torso, head, spinBall);
+    heroRoot.add(leftLeg, rightLeg, torso, leftArm, rightArm, headGroup, spinBall);
 
     let selectedChar = "steve";
     function applyHeroTheme(char) {
@@ -647,22 +821,24 @@
       trackMat.map = trackTex;
       trackMat.needsUpdate = true;
 
-      scene.background = new THREE.Color(isSonic ? 0x1e62d0 : 0x1b3b6f);
-      scene.fog.color.setHex(isSonic ? 0x1e62d0 : 0x1b3b6f);
-      grassMat.color.setHex(isSonic ? 0x20bf6b : 0x2e6f28);
+      grassMat.color.setHex(isSonic ? 0x22c55e : 0x4ade80);
+      sonicSpikes.visible = isSonic;
+      hairCap.visible = !isSonic;
 
       if (char === "steve") {
         heroBodyMat.color.setHex(0x00aaaa);
         heroHeadMat.color.setHex(0xd29b76);
+        heroHairMat.color.setHex(0x3b2313);
         heroLegMat.color.setHex(0x2f2f9e);
       } else if (char === "alex") {
         heroBodyMat.color.setHex(0x5b9e32);
         heroHeadMat.color.setHex(0xf3c69f);
+        heroHairMat.color.setHex(0xd96b27);
         heroLegMat.color.setHex(0x4a3b2c);
       } else {
-        heroBodyMat.color.setHex(0x1e90ff);
-        heroHeadMat.color.setHex(0x1e90ff);
-        heroLegMat.color.setHex(0xe52521);
+        heroBodyMat.color.setHex(0x2563eb);
+        heroHeadMat.color.setHex(0x2563eb);
+        heroLegMat.color.setHex(0xef4444);
       }
       itemLabel.textContent = isSonic ? "RINGS" : "EMERALDS";
     }
@@ -677,13 +853,13 @@
       });
     });
 
-    // --- 3D Obstacle & Trap Builders (Temple Maze Gates, Flamethrowers, Magma Beams) ---
-    const stoneMat = new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.85 });
-    const glowArchMat = new THREE.MeshStandardMaterial({ color: 0x2ed573, emissive: 0x2ed573, emissiveIntensity: 0.6 });
-    const ironMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.8, roughness: 0.3 });
-    const fireCoreMat = new THREE.MeshStandardMaterial({ color: 0xffdd59, emissive: 0xff5e57, emissiveIntensity: 1.4 });
-    const magmaBeamMat = new THREE.MeshStandardMaterial({ color: 0xff3f34, emissive: 0xff5e57, emissiveIntensity: 1.1 });
-    const rewardMat = new THREE.MeshStandardMaterial({ color: 0x2ed573, emissive: 0x10ac84, emissiveIntensity: 0.5, metalness: 0.6, roughness: 0.2 });
+    // --- 3D Obstacle & Trap Builders ---
+    const stoneMat = new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.8 });
+    const glowArchMat = new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x22c55e, emissiveIntensity: 0.75 });
+    const ironMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.75, roughness: 0.3 });
+    const fireCoreMat = new THREE.MeshStandardMaterial({ color: 0xfef08a, emissive: 0xf97316, emissiveIntensity: 1.5 });
+    const hazardMat = new THREE.MeshStandardMaterial({ map: createHazardTexture(), emissive: 0xef4444, emissiveIntensity: 0.45 });
+    const rewardMat = new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x16a34a, emissiveIntensity: 0.5, metalness: 0.5, roughness: 0.2 });
 
     let activeObstacles = [];
     let activeRewards = [];
@@ -693,30 +869,29 @@
       activeRewards.forEach((r) => scene.remove(r.mesh));
       activeObstacles = [];
       activeRewards = [];
+      rainbowGroup.visible = false;
     }
 
     function spawn3DWave() {
-      const spawnZ = -105;
+      const spawnZ = -115;
       const lanes = [-1, 0, 1];
       const safeLane = lanes[Math.floor(Math.random() * lanes.length)];
       const roll = Math.random();
 
       if (roll < 0.42) {
-        // 1. GIANT TEMPLE MAZE GATE (2 solid stone walls + 1 glowing open arch)
+        // 1. GIANT TEMPLE MAZE GATE
         const gateGroup = new THREE.Group();
         gateGroup.position.set(0, 0, spawnZ);
 
         lanes.forEach((lane) => {
           const lx = lane * LANE_WIDTH;
           if (lane === safeLane) {
-            // Glowing Open Archway
             const topLintel = new THREE.Mesh(new THREE.BoxGeometry(LANE_WIDTH, 1.2, 1.6), stoneMat);
             topLintel.position.set(lx, 4.4, 0);
-            const neonTrim = new THREE.Mesh(new THREE.BoxGeometry(LANE_WIDTH * 0.9, 0.22, 1.7), glowArchMat);
+            const neonTrim = new THREE.Mesh(new THREE.BoxGeometry(LANE_WIDTH * 0.9, 0.24, 1.7), glowArchMat);
             neonTrim.position.set(lx, 3.75, 0);
             gateGroup.add(topLintel, neonTrim);
           } else {
-            // Solid Heavy Stone Maze Wall
             const wall = new THREE.Mesh(new THREE.BoxGeometry(LANE_WIDTH * 0.96, 5.0, 1.6), stoneMat);
             wall.position.set(lx, 2.5, 0);
             wall.castShadow = true;
@@ -739,7 +914,7 @@
         const nozzleRight = new THREE.Mesh(new THREE.BoxGeometry(0.6, 1.1, 1.1), ironMat);
         nozzleRight.position.set(LANE_WIDTH * 0.45, 0.55, 0);
 
-        const fireJet = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, LANE_WIDTH * 0.9, 14), fireCoreMat);
+        const fireJet = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, LANE_WIDTH * 0.9, 14), fireCoreMat);
         fireJet.rotation.z = Math.PI / 2;
         fireJet.position.set(0, 0.55, 0);
 
@@ -748,7 +923,7 @@
         activeObstacles.push({ type: "flame", lane: safeLane, mesh: flameGroup, fireJet, hit: false });
 
       } else {
-        // 3. HIGH MAGMA LASER BEAM (Duck / Tunduk Under!)
+        // 3. HIGH HAZARD MAGMA BEAM (Duck / Tunduk Under!)
         const beamGroup = new THREE.Group();
         beamGroup.position.set(safeLane * LANE_WIDTH, 0, spawnZ);
 
@@ -757,8 +932,7 @@
         const pillarR = new THREE.Mesh(new THREE.BoxGeometry(0.45, 4.2, 0.7), ironMat);
         pillarR.position.set(LANE_WIDTH * 0.46, 2.1, 0);
 
-        // Suspended at Y = 2.35 so standing hits it, ducking slides right underneath
-        const beam = new THREE.Mesh(new THREE.BoxGeometry(LANE_WIDTH * 0.95, 1.1, 0.8), magmaBeamMat);
+        const beam = new THREE.Mesh(new THREE.BoxGeometry(LANE_WIDTH * 0.95, 1.05, 0.8), hazardMat);
         beam.position.set(0, 2.55, 0);
 
         beamGroup.add(pillarL, pillarR, beam);
@@ -768,25 +942,27 @@
     }
 
     function spawnRewardLine(lane, zStart) {
-      rewardMat.color.setHex(selectedChar === "sonic" ? 0xffd700 : 0x2ed573);
-      rewardMat.emissive.setHex(selectedChar === "sonic" ? 0xff9f1a : 0x10ac84);
+      rewardMat.color.setHex(selectedChar === "sonic" ? 0xfacc15 : 0x22c55e);
+      rewardMat.emissive.setHex(selectedChar === "sonic" ? 0xeab308 : 0x16a34a);
 
       for (let i = 0; i < 3; i++) {
         const geo = selectedChar === "sonic"
           ? new THREE.TorusGeometry(0.55, 0.14, 12, 24)
           : new THREE.OctahedronGeometry(0.6, 0);
         const mesh = new THREE.Mesh(geo, rewardMat);
-        mesh.position.set(lane * LANE_WIDTH, 1.35, zStart - i * 3.2);
+        mesh.position.set(lane * LANE_WIDTH, 1.35, zStart - i * 3.5);
         mesh.castShadow = true;
         scene.add(mesh);
         activeRewards.push({ lane, mesh, collected: false });
       }
     }
 
-    // --- Game State & Controls ---
+    // --- Game State & Kid-Friendly Pacing ---
     let gameRunning = false;
     let lives = 3;
     let score = 0;
+    let distanceMeters = 0;
+    let nextRainbowMilestone = 250;
     let bestScore = parseInt(localStorage.getItem("templeRunner3DBest") || "0", 10);
     bestDisplay.textContent = bestScore;
 
@@ -796,8 +972,9 @@
     let playerAction = "RUN";
     let manualActionTimer = 0;
 
-    const speedLabels = { "1": "4yo", "2": "5yo", "3": "Fast" };
-    const speedValues = { "1": 24, "2": 34, "3": 46 };
+    // Gentle starting speeds so 4- and 5-year-olds have plenty of reaction time
+    const speedLabels = { "1": "4yo (Gentle)", "2": "5yo (Normal)", "3": "Turbo" };
+    const speedValues = { "1": 12.5, "2": 18.0, "3": 25.0 };
     let worldSpeed = speedValues[speedSlider.value];
 
     speedSlider.addEventListener("input", () => {
@@ -828,11 +1005,11 @@
       } else if (dy < 0) {
         if (playerAction !== "JUMP") sfx.jump();
         playerAction = "JUMP";
-        manualActionTimer = 0.75;
+        manualActionTimer = 0.85;
       } else {
         if (playerAction !== "DUCK") sfx.duck();
         playerAction = "DUCK";
-        manualActionTimer = 0.75;
+        manualActionTimer = 0.85;
       }
     }, { passive: true });
 
@@ -934,7 +1111,7 @@
 
         const cx = centerX * poseCanvas.width;
         const cy = centerY * poseCanvas.height;
-        poseCtx.strokeStyle = "#ffa502";
+        poseCtx.strokeStyle = "#fbbf24";
         poseCtx.lineWidth = 3;
         poseCtx.beginPath();
         poseCtx.moveTo(cx - 16, cy);
@@ -948,7 +1125,7 @@
           if (lm[11] && lm[12]) {
             latestBodyX = (lm[11].x + lm[12].x) / 2;
             latestBodyY = (lm[11].y + lm[12].y) / 2;
-            poseCtx.fillStyle = "#2ed573";
+            poseCtx.fillStyle = "#4ade80";
             poseCtx.fillRect(latestBodyX * poseCanvas.width - 9, latestBodyY * poseCanvas.height - 9, 18, 18);
 
             const dx = latestBodyX - centerX;
@@ -978,8 +1155,10 @@
       clearWorldObjects();
       lives = 3;
       score = 0;
+      distanceMeters = 0;
+      nextRainbowMilestone = 250;
       invulnTimer = 0;
-      spawnDistAccumulator = 15;
+      spawnDistAccumulator = 18;
       playerLane = 0;
       playerAction = "RUN";
       updateHUD();
@@ -991,6 +1170,7 @@
 
     function updateHUD() {
       heartsDisplay.textContent = "♥".repeat(Math.max(0, lives)) + "♡".repeat(Math.max(0, 3 - lives));
+      distDisplay.textContent = `${Math.floor(distanceMeters)}m`;
       scoreDisplay.textContent = score;
       bestDisplay.textContent = bestScore;
     }
@@ -1001,6 +1181,20 @@
       const dt = Math.min(0.05, (now - lastTime) / 1000);
       lastTime = now;
 
+      // Animate Clouds & Flapping Birds continuously
+      clouds.forEach((c) => {
+        c.mesh.position.x += c.speed * dt;
+        if (c.mesh.position.x > 55) c.mesh.position.x = -55;
+      });
+      birds.forEach((b) => {
+        b.group.position.x += b.speedX * dt;
+        if (b.group.position.x > 55) b.group.position.x = -55;
+        if (b.group.position.x < -55) b.group.position.x = 55;
+        const flap = Math.sin(now * 0.014 + b.phase) * 0.55;
+        b.leftWing.rotation.z = flap;
+        b.rightWing.rotation.z = -flap;
+      });
+
       // Smooth Hero Lane Slide & Jump/Duck 3D Pose
       const targetX = playerLane * LANE_WIDTH;
       heroRoot.position.x += (targetX - heroRoot.position.x) * 12 * dt;
@@ -1009,17 +1203,18 @@
       heroRoot.position.y += (targetY - heroRoot.position.y) * 14 * dt;
 
       const isSonicBall = selectedChar === "sonic" && (playerAction === "JUMP" || playerAction === "DUCK");
-      leftLeg.visible = rightLeg.visible = torso.visible = head.visible = !isSonicBall;
+      leftLeg.visible = rightLeg.visible = torso.visible = leftArm.visible = rightArm.visible = headGroup.visible = !isSonicBall;
       spinBall.visible = isSonicBall;
       if (isSonicBall) spinBall.rotation.x -= 18 * dt;
 
-      // Running leg swing & duck squash
-      const runCycle = Math.sin(now * 0.016);
+      // Running leg & arm swing
+      const runCycle = Math.sin(now * 0.013);
       leftLeg.rotation.x = runCycle * 0.7;
       rightLeg.rotation.x = -runCycle * 0.7;
+      leftArm.rotation.x = -runCycle * 0.65;
+      rightArm.rotation.x = runCycle * 0.65;
       heroRoot.scale.y += ((playerAction === "DUCK" && !isSonicBall ? 0.52 : 1.0) - heroRoot.scale.y) * 14 * dt;
 
-      // Post-hit invulnerability blink
       heroRoot.visible = invulnTimer <= 0 || Math.floor(now / 80) % 2 === 0;
 
       if (gameRunning) {
@@ -1030,16 +1225,35 @@
         if (invulnTimer > 0) invulnTimer -= dt;
 
         const moveStep = worldSpeed * dt;
-        trackTex.offset.y -= moveStep * 0.088;
+        // FIXED: Positive offset (+=) scrolls the road texture FORWARD toward the player!
+        trackTex.offset.y += (moveStep / TRACK_LENGTH) * TRACK_REPEATS;
 
-        // Scroll Scenic Trees
+        // Track Distance & Trigger Rainbow Milestone every 250m
+        distanceMeters += moveStep * 1.6;
+        if (distanceMeters >= nextRainbowMilestone) {
+          rainbowGroup.position.set(0, 0, -115);
+          rainbowGroup.visible = true;
+          sfx.rainbow();
+          rainbowBanner.textContent = `🌈 ${nextRainbowMilestone}m RAINBOW MILESTONE!`;
+          rainbowBanner.classList.add("show");
+          setTimeout(() => rainbowBanner.classList.remove("show"), 3200);
+          nextRainbowMilestone += 250;
+        }
+
+        if (rainbowGroup.visible) {
+          rainbowGroup.position.z += moveStep;
+          if (rainbowGroup.position.z > 18) rainbowGroup.visible = false;
+        }
+
+        // Scroll Scenic Trees in exact sync with the road
         sceneryGroup.children.forEach((tree) => {
           tree.position.z += moveStep;
           if (tree.position.z > 12) tree.position.z -= 156;
         });
 
+        // Wider spacing (34m) between waves so young kids have ample reaction time
         spawnDistAccumulator += moveStep;
-        if (spawnDistAccumulator >= 28) {
+        if (spawnDistAccumulator >= 34) {
           spawnDistAccumulator = 0;
           spawn3DWave();
         }
@@ -1047,8 +1261,8 @@
         // Update Rewards
         activeRewards.forEach((r) => {
           r.mesh.position.z += moveStep;
-          r.mesh.rotation.y += 3.5 * dt;
-          if (!r.collected && Math.abs(r.mesh.position.z) < 1.3 && r.lane === playerLane) {
+          r.mesh.rotation.y += 3.2 * dt;
+          if (!r.collected && Math.abs(r.mesh.position.z) < 1.35 && r.lane === playerLane) {
             r.collected = true;
             r.mesh.visible = false;
             score += 1;
@@ -1057,11 +1271,10 @@
               localStorage.setItem("templeRunner3DBest", bestScore.toString());
             }
             sfx.collect();
-            updateHUD();
           }
         });
 
-        // Update 3D Traps & Show Kid-Friendly Action Prompt
+        // Update 3D Traps & Action Prompt
         let nearestPrompt = null;
         activeObstacles.forEach((obs) => {
           obs.mesh.position.z += moveStep;
@@ -1070,12 +1283,11 @@
           }
 
           const zPos = obs.mesh.position.z;
-          if (zPos > -42 && zPos < -3) {
+          if (zPos > -46 && zPos < -3) {
             if (obs.type === "flame" && obs.lane === playerLane) nearestPrompt = "⬆ JUMP OVER FLAMES!";
             if (obs.type === "beam" && obs.lane === playerLane) nearestPrompt = "⬇ DUCK UNDER BEAM!";
           }
 
-          // Collision Check at Player Z = 0
           if (!obs.hit && Math.abs(zPos) < 1.15 && invulnTimer <= 0) {
             let crashed = false;
             if (obs.type === "maze" && playerLane !== obs.safeLane) crashed = true;
@@ -1087,14 +1299,13 @@
               lives -= 1;
               invulnTimer = 2.0;
               sfx.hit();
-              updateHUD();
 
               if (lives <= 0) {
                 gameRunning = false;
                 sfx.celebrate();
                 const unit = selectedChar === "sonic" ? "Gold Rings" : "Emeralds";
                 overlayTitle.textContent = "AWESOME 3D RUN!";
-                overlaySub.innerHTML = `You collected <strong>${score} ${unit}</strong>! (Best: ${bestScore})`;
+                overlaySub.innerHTML = `You ran <strong>${Math.floor(distanceMeters)}m</strong> and collected <strong>${score} ${unit}</strong>!`;
                 playBtn.textContent = "↻ PLAY AGAIN";
                 overlayScreen.classList.remove("hidden");
               }
@@ -1109,7 +1320,8 @@
           actionBanner.style.opacity = "0";
         }
 
-        // Cleanup passed objects
+        updateHUD();
+
         activeObstacles = activeObstacles.filter((o) => {
           if (o.mesh.position.z > 14) { scene.remove(o.mesh); return false; }
           return true;
