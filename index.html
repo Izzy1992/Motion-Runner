@@ -2,8 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Minecraft Motion Runner - Calibration</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Minecraft Motion Runner - iPhone 16 Pro</title>
   <style>
     * {
       box-sizing: border-box;
@@ -11,17 +13,19 @@
       padding: 0;
       user-select: none;
       -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      touch-action: none;
       font-family: 'Courier New', Courier, monospace;
     }
 
-    body {
+    html, body {
       background-color: #1b1b1b;
       color: #ffffff;
       overflow: hidden;
       width: 100vw;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
+      height: 100dvh;
+      position: fixed;
+      inset: 0;
     }
 
     /* Orientation Warning for Portrait Mode */
@@ -35,7 +39,7 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 20px;
+      padding: 24px;
       border: 8px solid #593d29;
     }
 
@@ -45,20 +49,31 @@
       }
     }
 
-    /* Main 16:9 Split Layout */
+    /* Main 16:9 Split Layout with iPhone 16 Pro Safe Areas */
     #app {
       display: flex;
       width: 100%;
       height: 100%;
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
     }
 
-    /* Left Side: Live Camera & Skeleton View (40% width) */
+    /* Left Side: Live Camera & Calibration Panel (33% width) */
     #camera-panel {
       position: relative;
-      width: 40%;
+      width: 33%;
       height: 100%;
       background: #000;
-      border-right: 6px solid #593d29;
+      border-right: 5px solid #593d29;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #cam-feed-wrap {
+      position: relative;
+      flex: 1;
+      width: 100%;
       overflow: hidden;
     }
 
@@ -69,197 +84,192 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      /* Mirror front camera so moving left moves left on TV */
       transform: scaleX(-1);
     }
 
     #cam-label {
       position: absolute;
-      top: 10px;
-      left: 10px;
-      background: rgba(0, 0, 0, 0.7);
-      padding: 6px 10px;
+      top: 8px;
+      left: 8px;
+      background: rgba(0, 0, 0, 0.78);
+      padding: 5px 8px;
       border: 2px solid #55ff55;
-      font-size: 13px;
+      font-size: 11px;
       font-weight: bold;
       color: #55ff55;
       z-index: 10;
     }
 
-    /* Right Side: Minecraft World Preview & Controls (60% width) */
+    #countdown-badge {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      align-items: center;
+      justify-content: center;
+      font-size: 64px;
+      font-weight: bold;
+      color: #ffff55;
+      text-shadow: 3px 3px 0 #000;
+      z-index: 15;
+    }
+
+    #cam-controls {
+      background: #181818;
+      border-top: 4px solid #373737;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .cam-btn-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    .cam-btn-row button {
+      flex: 1;
+      padding: 10px 4px;
+      font-size: 12px;
+      min-height: 40px;
+    }
+
+    .slider-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: #dddddd;
+    }
+
+    .slider-row input[type="range"] {
+      width: 95px;
+      height: 22px;
+      accent-color: #55ff55;
+    }
+
+    /* Right Side: Full 3D-Perspective Minecraft Game Canvas (67% width) */
     #game-panel {
       position: relative;
-      width: 60%;
+      width: 67%;
       height: 100%;
-      background: linear-gradient(180deg, #78a7ff 0%, #b8d2ff 60%, #5b8731 60%, #5b8731 65%, #79553a 65%, #593d29 100%);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 16px;
+      background: #78a7ff;
+      overflow: hidden;
     }
 
-    /* Top HUD */
-    #hud-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(0, 0, 0, 0.65);
-      border: 4px solid #373737;
-      padding: 10px 16px;
-    }
-
-    .badge {
-      font-size: 20px;
-      font-weight: bold;
-      padding: 6px 14px;
-      background: #222;
-      border: 3px solid #8b8b8b;
-      color: #ffff55;
-    }
-
-    .badge.active-action {
-      background: #3b8526;
-      border-color: #7cfc00;
-      color: #ffffff;
-    }
-
-    /* Minecraft 3-Lane Preview Stage */
-    #stage {
-      position: relative;
-      flex: 1;
-      margin: 12px 0;
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-around;
-      padding-bottom: 24px;
-    }
-
-    .lane-marker {
-      width: 28%;
-      height: 24px;
-      background: #4a7023;
-      border: 4px solid #2d4712;
-      text-align: center;
-      line-height: 16px;
-      font-size: 12px;
-      color: #d0f0b0;
-    }
-
-    /* Pixelated Block Character */
-    #player-avatar {
-      position: absolute;
-      bottom: 48px;
-      left: 50%;
-      width: 64px;
-      height: 110px;
-      transform: translateX(-50%);
-      transition: left 0.12s ease-out, bottom 0.12s ease-out, height 0.12s ease-out;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .mc-head {
-      width: 40px;
-      height: 40px;
-      background: #d29b76;
-      border: 3px solid #2b1d12;
-      position: relative;
-    }
-    .mc-hair {
+    #game-canvas {
       width: 100%;
-      height: 10px;
-      background: #3b2313;
+      height: 100%;
+      display: block;
     }
-    .mc-eyes {
+
+    /* Top HUD Overlay */
+    #hud-top {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      right: 10px;
       display: flex;
       justify-content: space-between;
-      padding: 6px 5px 0;
-    }
-    .mc-eye {
-      width: 8px;
-      height: 6px;
-      background: #483d8b;
-    }
-    .mc-body {
-      width: 44px;
-      height: 42px;
-      background: #00aaaa;
-      border: 3px solid #004d4d;
-    }
-    .mc-legs {
-      width: 44px;
-      height: 28px;
-      background: #2f2f9e;
-      border: 3px solid #161654;
-    }
-
-    /* Duck state squashes character */
-    #player-avatar.ducking {
-      height: 62px;
-    }
-    #player-avatar.ducking .mc-body {
-      height: 20px;
-    }
-    #player-avatar.ducking .mc-legs {
-      height: 12px;
-    }
-
-    /* Jump state lifts character */
-    #player-avatar.jumping {
-      bottom: 135px;
-    }
-
-    /* Bottom Control Bar */
-    #controls {
-      background: rgba(0, 0, 0, 0.78);
-      border: 4px solid #373737;
-      padding: 10px 14px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
       align-items: center;
-      justify-content: space-between;
+      pointer-events: none;
+      z-index: 20;
+      gap: 6px;
+    }
+
+    .hud-box {
+      background: rgba(0, 0, 0, 0.72);
+      border: 3px solid #444;
+      padding: 5px 10px;
+      font-size: 15px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #hearts-display {
+      color: #ff3b3b;
+      font-size: 20px;
+      letter-spacing: 2px;
+    }
+
+    #score-display {
+      color: #55ff55;
+    }
+
+    #action-pill {
+      color: #ffff55;
+      font-size: 13px;
+    }
+
+    /* Start / Game Over Overlay */
+    #overlay-screen {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.76);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 16px;
+      z-index: 30;
+    }
+
+    #overlay-screen.hidden {
+      display: none;
+    }
+
+    #overlay-title {
+      font-size: 26px;
+      color: #55ff55;
+      text-shadow: 3px 3px 0 #1e4613;
+      margin-bottom: 8px;
+    }
+
+    #overlay-sub {
+      font-size: 13px;
+      color: #ffffff;
+      max-width: 440px;
+      line-height: 1.4;
+      margin-bottom: 12px;
+    }
+
+    .legend-grid {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+      font-size: 11px;
+    }
+
+    .legend-item {
+      background: rgba(30, 30, 30, 0.92);
+      border: 2px solid #777;
+      padding: 6px 8px;
     }
 
     button {
       background: #3b8526;
       color: white;
-      border: 4px solid #1e4613;
+      border: 3px solid #1e4613;
       border-top-color: #6bc349;
       border-left-color: #6bc349;
-      padding: 10px 16px;
+      padding: 12px 22px;
       font-size: 16px;
       font-weight: bold;
       cursor: pointer;
     }
 
     button:active {
-      transform: scale(0.97);
+      transform: scale(0.96);
     }
 
     button:disabled {
-      background: #555;
-      border-color: #333;
-      color: #999;
-    }
-
-    .slider-group {
-      display: flex;
-      flex-direction: column;
-      font-size: 12px;
-      gap: 4px;
-    }
-
-    input[type="range"] {
-      width: 115px;
-      accent-color: #55ff55;
-    }
-
-    #status-msg {
-      width: 100%;
-      font-size: 13px;
-      color: #55ffff;
+      background: #444;
+      border-color: #222;
+      color: #888;
     }
   </style>
 </head>
@@ -267,99 +277,242 @@
 
   <!-- Rotate Phone Prompt -->
   <div id="rotate-warning">
-    <h1 style="color:#55ff55; margin-bottom:12px;">ROTATE IPHONE TO LANDSCAPE</h1>
-    <p style="font-size:18px;">Turn your iPhone sideways (16:9) so it fills your TV screen and gives the camera a wide view.</p>
+    <h1 style="color:#55ff55; margin-bottom:12px;">ROTATE IPHONE SIDEWAYS</h1>
+    <p style="font-size:17px;">Turn off Portrait Lock in Control Center and hold your iPhone 16 Pro in Landscape (16:9).</p>
   </div>
 
   <div id="app">
-    <!-- Left: Camera & Skeleton Feed -->
+    <!-- Left: Camera & Tuning Panel -->
     <div id="camera-panel">
-      <div id="cam-label">CAMERA: WAITING...</div>
-      <video id="webcam" autoplay playsinline muted></video>
-      <canvas id="pose-canvas"></canvas>
+      <div id="cam-feed-wrap">
+        <div id="cam-label">CAM: OFF (SWIPE OK)</div>
+        <div id="countdown-badge">3</div>
+        <video id="webcam" autoplay playsinline muted></video>
+        <canvas id="pose-canvas"></canvas>
+      </div>
+
+      <div id="cam-controls">
+        <div class="cam-btn-row">
+          <button id="start-cam-btn">1. CAMERA</button>
+          <button id="calibrate-btn" disabled>2. CALIBRATE</button>
+        </div>
+
+        <div class="slider-row">
+          <span>Speed: <strong id="speed-val">4yo</strong></span>
+          <input type="range" id="speed-slider" min="1" max="3" step="1" value="1" />
+        </div>
+
+        <div class="slider-row">
+          <span>Side: <strong id="lat-val">0.14</strong></span>
+          <input type="range" id="lat-slider" min="0.06" max="0.26" step="0.01" value="0.14" />
+        </div>
+
+        <div class="slider-row">
+          <span>Jump/Duck: <strong id="vert-val">0.09</strong></span>
+          <input type="range" id="vert-slider" min="0.04" max="0.18" step="0.01" value="0.09" />
+        </div>
+      </div>
     </div>
 
-    <!-- Right: Minecraft Test Stage & Controls -->
+    <!-- Right: Minecraft 3D-Perspective Runner -->
     <div id="game-panel">
       <div id="hud-top">
-        <div>LANE: <span id="lane-badge" class="badge">CENTER</span></div>
-        <div>ACTION: <span id="action-badge" class="badge">RUN</span></div>
+        <div class="hud-box">NYAWA: <span id="hearts-display">♥♥♥</span></div>
+        <div class="hud-box"><span id="action-pill">CENTER | RUN</span></div>
+        <div class="hud-box">EMERALDS: <span id="score-display">0</span></div>
       </div>
 
-      <div id="stage">
-        <div class="lane-marker">LEFT</div>
-        <div class="lane-marker">CENTER</div>
-        <div class="lane-marker">RIGHT</div>
+      <canvas id="game-canvas"></canvas>
 
-        <div id="player-avatar">
-          <div class="mc-head">
-            <div class="mc-hair"></div>
-            <div class="mc-eyes">
-              <div class="mc-eye"></div>
-              <div class="mc-eye"></div>
-            </div>
+      <div id="overlay-screen">
+        <div id="overlay-title">MINECRAFT MOTION RUNNER</div>
+        <div id="overlay-sub">
+          Tap <strong>1. CAMERA</strong> & <strong>2. CALIBRATE</strong> for TV motion play—or tap <strong>PLAY NOW</strong> and <strong>Swipe</strong> on your iPhone screen to test!
+        </div>
+
+        <div class="legend-grid">
+          <div class="legend-item" style="border-color:#55ff55;">
+            <strong style="color:#55ff55;">CREEPER</strong><br/>Move LEFT / RIGHT
           </div>
-          <div class="mc-body"></div>
-          <div class="mc-legs"></div>
-        </div>
-      </div>
-
-      <div id="controls">
-        <button id="start-btn">1. START CAMERA</button>
-        <button id="calibrate-btn" disabled>2. CALIBRATE CENTER</button>
-
-        <div class="slider-group">
-          <label>Side Sensitivity: <span id="lat-val">0.14</span></label>
-          <input type="range" id="lat-slider" min="0.06" max="0.28" step="0.01" value="0.14" />
+          <div class="legend-item" style="border-color:#ff7700;">
+            <strong style="color:#ff7700;">LAVA PIT</strong><br/>JUMP Up!
+          </div>
+          <div class="legend-item" style="border-color:#55ffff;">
+            <strong style="color:#55ffff;">GHAST</strong><br/>DUCK (Tunduk)!
+          </div>
         </div>
 
-        <div class="slider-group">
-          <label>Jump/Duck Sensitivity: <span id="vert-val">0.09</span></label>
-          <input type="range" id="vert-slider" min="0.04" max="0.20" step="0.01" value="0.09" />
-        </div>
-
-        <div id="status-msg">Tap "1. START CAMERA", prop phone under TV, and have your son stand in center.</div>
+        <button id="play-btn">▶ PLAY NOW</button>
       </div>
     </div>
   </div>
 
-  <!-- MediaPipe Tasks Vision (Official CDN) -->
   <script type="module">
     import {
       FilesetResolver,
       PoseLandmarker
     } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
 
+    // --- DOM Elements ---
     const video = document.getElementById("webcam");
-    const canvas = document.getElementById("pose-canvas");
-    const ctx = canvas.getContext("2d");
+    const poseCanvas = document.getElementById("pose-canvas");
+    const poseCtx = poseCanvas.getContext("2d");
     const camLabel = document.getElementById("cam-label");
-    const statusMsg = document.getElementById("status-msg");
-    const startBtn = document.getElementById("start-btn");
+    const countdownBadge = document.getElementById("countdown-badge");
+    const startCamBtn = document.getElementById("start-cam-btn");
     const calibrateBtn = document.getElementById("calibrate-btn");
 
-    const laneBadge = document.getElementById("lane-badge");
-    const actionBadge = document.getElementById("action-badge");
-    const avatar = document.getElementById("player-avatar");
+    const gameCanvas = document.getElementById("game-canvas");
+    const ctx = gameCanvas.getContext("2d");
+    const overlayScreen = document.getElementById("overlay-screen");
+    const overlayTitle = document.getElementById("overlay-title");
+    const overlaySub = document.getElementById("overlay-sub");
+    const playBtn = document.getElementById("play-btn");
 
+    const heartsDisplay = document.getElementById("hearts-display");
+    const scoreDisplay = document.getElementById("score-display");
+    const actionPill = document.getElementById("action-pill");
+
+    const speedSlider = document.getElementById("speed-slider");
+    const speedVal = document.getElementById("speed-val");
     const latSlider = document.getElementById("lat-slider");
-    const vertSlider = document.getElementById("vert-slider");
     const latVal = document.getElementById("lat-val");
+    const vertSlider = document.getElementById("vert-slider");
     const vertVal = document.getElementById("vert-val");
 
-    let poseLandmarker = null;
-    let running = false;
-    let lastVideoTime = -1;
+    // --- Keep iPhone Screen Awake During TV Mirroring ---
+    async function requestWakeLock() {
+      try {
+        if ("wakeLock" in navigator) {
+          await navigator.wakeLock.request("screen");
+        }
+      } catch (e) {}
+    }
 
-    // Calibration baseline (normalized 0.0 to 1.0)
+    // --- iOS Safari Web Audio Synthesizer ---
+    let audioCtx = null;
+    function unlockAudio() {
+      try {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === "suspended") audioCtx.resume();
+      } catch (e) {}
+    }
+
+    function playTone(freq, type, duration, slideTo = null) {
+      try {
+        unlockAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        if (slideTo) {
+          osc.frequency.exponentialRampToValueAtTime(slideTo, audioCtx.currentTime + duration);
+        }
+        gain.gain.setValueAtTime(0.16, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    const sfx = {
+      beep: () => playTone(440, "sine", 0.12),
+      jump: () => playTone(260, "square", 0.18, 520),
+      duck: () => playTone(220, "triangle", 0.15, 110),
+      emerald: () => {
+        playTone(587, "sine", 0.1);
+        setTimeout(() => playTone(880, "sine", 0.18), 70);
+      },
+      hit: () => playTone(140, "sawtooth", 0.35, 55),
+      gameOver: () => {
+        playTone(300, "sawtooth", 0.2);
+        setTimeout(() => playTone(220, "sawtooth", 0.2), 180);
+        setTimeout(() => playTone(140, "sawtooth", 0.4), 360);
+      }
+    };
+
+    // --- Game State ---
+    let gameRunning = false;
+    let lives = 3;
+    let score = 0;
+    let invulnTimer = 0;
+    let trackOffset = 0;
+    let spawnTimer = 0;
+
+    let playerLane = 0;
+    let visualLaneX = 0;
+    let playerAction = "RUN";
+    let manualActionTimer = 0;
+
+    let entities = [];
+
+    const speedLabels = { "1": "4yo", "2": "5yo", "3": "Fast" };
+    const speedRates = { "1": 0.0052, "2": 0.0078, "3": 0.0108 };
+    let currentSpeedRate = speedRates[speedSlider.value];
+
+    speedSlider.addEventListener("input", () => {
+      speedVal.textContent = speedLabels[speedSlider.value];
+      currentSpeedRate = speedRates[speedSlider.value];
+    });
+
+    function resizeGameCanvas() {
+      const rect = gameCanvas.parentElement.getBoundingClientRect();
+      gameCanvas.width = rect.width;
+      gameCanvas.height = rect.height;
+    }
+    window.addEventListener("resize", resizeGameCanvas);
+    resizeGameCanvas();
+
+    // --- Touch Swipe Controls (Test Directly on iPhone Screen Anytime!) ---
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    gameCanvas.addEventListener("touchstart", (e) => {
+      unlockAudio();
+      if (e.touches.length > 0) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      }
+    }, { passive: true });
+
+    gameCanvas.addEventListener("touchend", (e) => {
+      if (!gameRunning || e.changedTouches.length === 0) return;
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      const dy = e.changedTouches[0].clientY - touchStartY;
+
+      if (Math.abs(dx) < 20 && Math.abs(dy) < 20) return;
+
+      if (Math.abs(dx) > Math.abs(dy)) {
+        if (dx < 0) playerLane = Math.max(-1, playerLane - 1);
+        else playerLane = Math.min(1, playerLane + 1);
+      } else {
+        if (dy < 0) {
+          if (playerAction !== "JUMP") sfx.jump();
+          playerAction = "JUMP";
+          manualActionTimer = 0.7;
+        } else {
+          if (playerAction !== "DUCK") sfx.duck();
+          playerAction = "DUCK";
+          manualActionTimer = 0.7;
+        }
+      }
+    }, { passive: true });
+
+    // --- MediaPipe Camera Tracking ---
+    let poseLandmarker = null;
+    let camRunning = false;
+    let lastVideoTime = -1;
     let centerX = 0.5;
     let centerY = 0.45;
     let latestBodyX = null;
     let latestBodyY = null;
-
-    // Sensitivity thresholds
     let lateralThreshold = parseFloat(latSlider.value);
     let verticalThreshold = parseFloat(vertSlider.value);
+    let prevCamAction = "RUN";
 
     latSlider.addEventListener("input", () => {
       lateralThreshold = parseFloat(latSlider.value);
@@ -371,9 +524,8 @@
       vertVal.textContent = verticalThreshold.toFixed(2);
     });
 
-    // Load MediaPipe Pose Landmarker (Lite model for fast mobile FPS)
     async function initPoseDetector() {
-      statusMsg.textContent = "Loading AI Body Tracker (takes ~3 seconds)...";
+      camLabel.textContent = "LOADING AI...";
       const vision = await FilesetResolver.forVisionTasks(
         "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm"
       );
@@ -391,134 +543,387 @@
       });
     }
 
-    // Start iPhone Front Camera
-    startBtn.addEventListener("click", async () => {
-      startBtn.disabled = true;
+    startCamBtn.addEventListener("click", async () => {
+      unlockAudio();
+      requestWakeLock();
+      startCamBtn.disabled = true;
       try {
-        if (!poseLandmarker) {
-          await initPoseDetector();
-        }
-
+        if (!poseLandmarker) await initPoseDetector();
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: "user",
-            width: { ideal: 640 },
-            height: { ideal: 360 }
-          },
+          video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 360 } },
           audio: false
         });
-
         video.srcObject = stream;
         video.onloadeddata = () => {
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-          running = true;
+          poseCanvas.width = video.videoWidth;
+          poseCanvas.height = video.videoHeight;
+          camRunning = true;
           calibrateBtn.disabled = false;
-          camLabel.textContent = "CAMERA: ACTIVE";
-          statusMsg.textContent = "Stand 1.5m away in the middle, then tap '2. CALIBRATE CENTER'!";
-          predictLoop();
+          camLabel.textContent = "CAM: ACTIVE";
+          poseLoop();
         };
       } catch (err) {
-        camLabel.textContent = "CAMERA ERROR";
-        statusMsg.textContent = "Camera blocked or unavailable: " + err.message;
-        startBtn.disabled = false;
+        camLabel.textContent = "CAM BLOCKED";
+        startCamBtn.disabled = false;
       }
     });
 
-    // Set neutral standing center for the child
+    // 3-Second Countdown Calibration so you can step back into position!
     calibrateBtn.addEventListener("click", () => {
-      if (latestBodyX !== null && latestBodyY !== null) {
-        centerX = latestBodyX;
-        centerY = latestBodyY;
-        statusMsg.textContent = "CALIBRATED! Try stepping Left/Right, Jumping, or Ducking!";
-      } else {
-        statusMsg.textContent = "Body not detected yet—make sure shoulders/head are visible in camera.";
-      }
+      unlockAudio();
+      calibrateBtn.disabled = true;
+      let count = 3;
+      countdownBadge.style.display = "flex";
+      countdownBadge.textContent = count;
+      sfx.beep();
+
+      const timer = setInterval(() => {
+        count -= 1;
+        if (count > 0) {
+          countdownBadge.textContent = count;
+          sfx.beep();
+        } else {
+          clearInterval(timer);
+          countdownBadge.style.display = "none";
+          calibrateBtn.disabled = false;
+          if (latestBodyX !== null && latestBodyY !== null) {
+            centerX = latestBodyX;
+            centerY = latestBodyY;
+            camLabel.textContent = "CALIBRATED!";
+            sfx.emerald();
+          } else {
+            camLabel.textContent = "NO BODY FOUND";
+          }
+        }
+      }, 900);
     });
 
-    function updateMovementUI(bodyX, bodyY) {
-      // Note: Video is CSS-mirrored, so raw camera X > centerX means player moved LEFT on TV
+    function processBodyMovement(bodyX, bodyY) {
       const deltaX = bodyX - centerX;
-      const deltaY = bodyY - centerY; // Smaller Y = higher on screen (Jump)
-
-      // 1. Determine Lane (Left / Center / Right)
-      let lane = "CENTER";
-      let targetLeftPercent = "50%";
+      const deltaY = bodyY - centerY;
 
       if (deltaX > lateralThreshold) {
-        lane = "LEFT";
-        targetLeftPercent = "18%";
+        playerLane = -1;
       } else if (deltaX < -lateralThreshold) {
-        lane = "RIGHT";
-        targetLeftPercent = "82%";
+        playerLane = 1;
+      } else {
+        playerLane = 0;
       }
 
-      laneBadge.textContent = lane;
-      avatar.style.left = targetLeftPercent;
-
-      // 2. Determine Vertical Action (Jump / Duck / Run)
-      let action = "RUN";
-      avatar.classList.remove("jumping", "ducking");
-      actionBadge.classList.remove("active-action");
-
+      let newAction = "RUN";
       if (deltaY < -verticalThreshold) {
-        action = "JUMP!";
-        avatar.classList.add("jumping");
-        actionBadge.classList.add("active-action");
+        newAction = "JUMP";
+        if (prevCamAction !== "JUMP") sfx.jump();
       } else if (deltaY > verticalThreshold) {
-        action = "DUCK!";
-        avatar.classList.add("ducking");
-        actionBadge.classList.add("active-action");
+        newAction = "DUCK";
+        if (prevCamAction !== "DUCK") sfx.duck();
       }
-
-      actionBadge.textContent = action;
+      prevCamAction = newAction;
+      playerAction = newAction;
     }
 
-    function predictLoop() {
-      if (!running) return;
-
-      const startTimeMs = performance.now();
+    function poseLoop() {
+      if (!camRunning) return;
+      const now = performance.now();
       if (video.currentTime !== lastVideoTime) {
         lastVideoTime = video.currentTime;
-        const results = poseLandmarker.detectForVideo(video, startTimeMs);
+        const results = poseLandmarker.detectForVideo(video, now);
+        poseCtx.clearRect(0, 0, poseCanvas.width, poseCanvas.height);
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Draw Calibration Crosshair (un-mirrored coordinates)
-        const calPxX = centerX * canvas.width;
-        const calPxY = centerY * canvas.height;
-        ctx.strokeStyle = "#ffff55";
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.moveTo(calPxX - 20, calPxY);
-        ctx.lineTo(calPxX + 20, calPxY);
-        ctx.moveTo(calPxX, calPxY - 20);
-        ctx.lineTo(calPxX, calPxY + 20);
-        ctx.stroke();
+        // Draw yellow calibration target
+        const cx = centerX * poseCanvas.width;
+        const cy = centerY * poseCanvas.height;
+        poseCtx.strokeStyle = "#ffff55";
+        poseCtx.lineWidth = 3;
+        poseCtx.beginPath();
+        poseCtx.moveTo(cx - 18, cy);
+        poseCtx.lineTo(cx + 18, cy);
+        poseCtx.moveTo(cx, cy - 18);
+        poseCtx.lineTo(cx, cy + 18);
+        poseCtx.stroke();
 
         if (results.landmarks && results.landmarks.length > 0) {
           const lm = results.landmarks[0];
-          // Use midpoint between Left Shoulder (11) and Right Shoulder (12)
-          const leftShoulder = lm[11];
-          const rightShoulder = lm[12];
+          if (lm[11] && lm[12]) {
+            latestBodyX = (lm[11].x + lm[12].x) / 2;
+            latestBodyY = (lm[11].y + lm[12].y) / 2;
 
-          if (leftShoulder && rightShoulder) {
-            latestBodyX = (leftShoulder.x + rightShoulder.x) / 2;
-            latestBodyY = (leftShoulder.y + rightShoulder.y) / 2;
-
-            // Draw green tracking box on child's chest/shoulders
-            const pxX = latestBodyX * canvas.width;
-            const pxY = latestBodyY * canvas.height;
-            ctx.fillStyle = "#55ff55";
-            ctx.fillRect(pxX - 12, pxY - 12, 24, 24);
-
-            updateMovementUI(latestBodyX, latestBodyY);
+            poseCtx.fillStyle = "#55ff55";
+            poseCtx.fillRect(latestBodyX * poseCanvas.width - 10, latestBodyY * poseCanvas.height - 10, 20, 20);
+            processBodyMovement(latestBodyX, latestBodyY);
           }
         }
       }
-
-      requestAnimationFrame(predictLoop);
+      requestAnimationFrame(poseLoop);
     }
+
+    // --- Game Start / Reset ---
+    function startGame() {
+      unlockAudio();
+      requestWakeLock();
+      lives = 3;
+      score = 0;
+      invulnTimer = 0;
+      entities = [];
+      spawnTimer = 0;
+      playerLane = 0;
+      visualLaneX = 0;
+      playerAction = "RUN";
+      updateHUD();
+      overlayScreen.classList.add("hidden");
+      gameRunning = true;
+    }
+
+    playBtn.addEventListener("click", startGame);
+
+    function updateHUD() {
+      heartsDisplay.textContent = "♥".repeat(Math.max(0, lives)) + "♡".repeat(Math.max(0, 3 - lives));
+      scoreDisplay.textContent = score;
+      const laneName = playerLane === -1 ? "LEFT" : playerLane === 1 ? "RIGHT" : "CENTER";
+      actionPill.textContent = `${laneName} | ${playerAction}`;
+    }
+
+    function spawnWave() {
+      const lanes = [-1, 0, 1];
+      const safeLane = lanes[Math.floor(Math.random() * lanes.length)];
+      const pattern = Math.random();
+
+      if (pattern < 0.45) {
+        lanes.forEach((l) => {
+          if (l === safeLane) {
+            entities.push({ lane: l, z: 0.0, type: "emerald", collected: false });
+          } else if (Math.random() < 0.7) {
+            entities.push({ lane: l, z: 0.0, type: "creeper", collected: false });
+          }
+        });
+      } else if (pattern < 0.75) {
+        entities.push({ lane: safeLane, z: 0.0, type: "lava", collected: false });
+      } else {
+        entities.push({ lane: safeLane, z: 0.0, type: "ghast", collected: false });
+      }
+    }
+
+    function project(lane, z, w, h) {
+      const horizonY = h * 0.36;
+      const groundH = h - horizonY;
+      const p = Math.pow(z, 1.65);
+      const y = horizonY + p * groundH;
+      const scale = 0.16 + p * 0.95;
+      const laneSpread = w * 0.27 * scale;
+      const x = w * 0.5 + lane * laneSpread;
+      return { x, y, scale };
+    }
+
+    function drawWorld(w, h) {
+      const horizonY = h * 0.36;
+
+      ctx.fillStyle = "#78a7ff";
+      ctx.fillRect(0, 0, w, horizonY);
+
+      ctx.fillStyle = "#fff59d";
+      ctx.fillRect(w * 0.82, h * 0.07, 42, 42);
+      ctx.fillStyle = "rgba(255,255,255,0.85)";
+      ctx.fillRect(w * 0.15, h * 0.09, 85, 22);
+      ctx.fillRect(w * 0.52, h * 0.13, 95, 20);
+
+      ctx.fillStyle = "#4d7a28";
+      ctx.fillRect(0, horizonY, w, h - horizonY);
+
+      const topHalfW = w * 0.08;
+      const botHalfW = w * 0.44;
+      ctx.fillStyle = "#6e5036";
+      ctx.beginPath();
+      ctx.moveTo(w * 0.5 - topHalfW, horizonY);
+      ctx.lineTo(w * 0.5 + topHalfW, horizonY);
+      ctx.lineTo(w * 0.5 + botHalfW, h);
+      ctx.lineTo(w * 0.5 - botHalfW, h);
+      ctx.closePath();
+      ctx.fill();
+
+      const stripeCount = 8;
+      for (let i = 0; i < stripeCount; i++) {
+        const z1 = ((i + trackOffset) % stripeCount) / stripeCount;
+        const z2 = Math.min(1, z1 + 0.06);
+        const p1 = Math.pow(z1, 1.65);
+        const p2 = Math.pow(z2, 1.65);
+        const y1 = horizonY + p1 * (h - horizonY);
+        const y2 = horizonY + p2 * (h - horizonY);
+        const hw1 = topHalfW + p1 * (botHalfW - topHalfW);
+        const hw2 = topHalfW + p2 * (botHalfW - topHalfW);
+
+        ctx.fillStyle = "rgba(0, 0, 0, 0.14)";
+        ctx.beginPath();
+        ctx.moveTo(w * 0.5 - hw1, y1);
+        ctx.lineTo(w * 0.5 + hw1, y1);
+        ctx.lineTo(w * 0.5 + hw2, y2);
+        ctx.lineTo(w * 0.5 - hw2, y2);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      ctx.strokeStyle = "#3b291a";
+      ctx.lineWidth = 3;
+      [-0.33, 0.33].forEach((offset) => {
+        ctx.beginPath();
+        ctx.moveTo(w * 0.5 + topHalfW * offset * 3, horizonY);
+        ctx.lineTo(w * 0.5 + botHalfW * offset * 3, h);
+        ctx.stroke();
+      });
+    }
+
+    function drawEntity(ent, w, h) {
+      const { x, y, scale } = project(ent.lane, ent.z, w, h);
+      const size = 64 * scale;
+
+      if (ent.type === "creeper") {
+        ctx.fillStyle = "#3ba32c";
+        ctx.fillRect(x - size * 0.45, y - size * 1.35, size * 0.9, size * 1.35);
+        ctx.strokeStyle = "#1b4f13";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x - size * 0.45, y - size * 1.35, size * 0.9, size * 1.35);
+        ctx.fillStyle = "#111";
+        ctx.fillRect(x - size * 0.28, y - size * 1.18, size * 0.18, size * 0.18);
+        ctx.fillRect(x + size * 0.10, y - size * 1.18, size * 0.18, size * 0.18);
+        ctx.fillRect(x - size * 0.12, y - size * 0.96, size * 0.24, size * 0.26);
+      } else if (ent.type === "lava") {
+        ctx.fillStyle = "#ff4500";
+        ctx.fillRect(x - size * 0.65, y - size * 0.25, size * 1.3, size * 0.32);
+        ctx.fillStyle = "#ffae00";
+        ctx.fillRect(x - size * 0.45, y - size * 0.18, size * 0.9, size * 0.16);
+      } else if (ent.type === "ghast") {
+        const floatY = y - size * 1.45;
+        ctx.fillStyle = "#f2f2f2";
+        ctx.fillRect(x - size * 0.55, floatY - size * 0.75, size * 1.1, size * 0.75);
+        ctx.strokeStyle = "#999";
+        ctx.strokeRect(x - size * 0.55, floatY - size * 0.75, size * 1.1, size * 0.75);
+        ctx.fillStyle = "#dcdcdc";
+        ctx.fillRect(x - size * 0.4, floatY, size * 0.15, size * 0.28);
+        ctx.fillRect(x - size * 0.08, floatY, size * 0.15, size * 0.32);
+        ctx.fillRect(x + size * 0.25, floatY, size * 0.15, size * 0.28);
+        ctx.fillStyle = "#d32f2f";
+        ctx.fillRect(x - size * 0.3, floatY - size * 0.45, size * 0.18, size * 0.12);
+        ctx.fillRect(x + size * 0.12, floatY - size * 0.45, size * 0.18, size * 0.12);
+      } else if (ent.type === "emerald") {
+        const bob = Math.sin(performance.now() * 0.008) * 6 * scale;
+        ctx.fillStyle = "#17dd62";
+        ctx.beginPath();
+        ctx.moveTo(x, y - size * 0.95 + bob);
+        ctx.lineTo(x + size * 0.28, y - size * 0.65 + bob);
+        ctx.lineTo(x, y - size * 0.35 + bob);
+        ctx.lineTo(x - size * 0.28, y - size * 0.65 + bob);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+    }
+
+    function drawPlayer(w, h) {
+      if (invulnTimer > 0 && Math.floor(performance.now() / 90) % 2 === 0) return;
+
+      visualLaneX += (playerLane - visualLaneX) * 0.22;
+      const { x, y } = project(visualLaneX, 0.88, w, h);
+
+      let jumpOffset = 0;
+      let heightMult = 1.0;
+      if (playerAction === "JUMP") jumpOffset = 72;
+      if (playerAction === "DUCK") heightMult = 0.52;
+
+      const py = y - jumpOffset;
+      const pw = 50;
+      const ph = 96 * heightMult;
+
+      ctx.fillStyle = "rgba(0,0,0,0.35)";
+      ctx.beginPath();
+      ctx.ellipse(x, y + 4, 26, 8, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#2f2f9e";
+      ctx.fillRect(x - pw * 0.38, py - ph * 0.32, pw * 0.76, ph * 0.32);
+
+      ctx.fillStyle = "#00aaaa";
+      ctx.fillRect(x - pw * 0.42, py - ph * 0.68, pw * 0.84, ph * 0.36);
+
+      const headSize = 34;
+      ctx.fillStyle = "#d29b76";
+      ctx.fillRect(x - headSize / 2, py - ph * 0.68 - headSize, headSize, headSize);
+      ctx.fillStyle = "#3b2313";
+      ctx.fillRect(x - headSize / 2, py - ph * 0.68 - headSize, headSize, 8);
+    }
+
+    let lastFrameTime = performance.now();
+
+    function gameLoop(now) {
+      const dt = Math.min(0.05, (now - lastFrameTime) / 1000);
+      lastFrameTime = now;
+
+      const w = gameCanvas.width;
+      const h = gameCanvas.height;
+
+      if (gameRunning) {
+        if (manualActionTimer > 0) {
+          manualActionTimer -= dt;
+          if (manualActionTimer <= 0 && !camRunning) {
+            playerAction = "RUN";
+          }
+        }
+
+        if (invulnTimer > 0) invulnTimer -= dt;
+
+        trackOffset += currentSpeedRate * 14;
+        spawnTimer += currentSpeedRate;
+        if (spawnTimer >= 0.62) {
+          spawnTimer = 0;
+          spawnWave();
+        }
+
+        entities.forEach((ent) => {
+          ent.z += currentSpeedRate;
+
+          if (!ent.collected && ent.z >= 0.84 && ent.z <= 0.94 && ent.lane === playerLane) {
+            if (ent.type === "emerald") {
+              ent.collected = true;
+              score += 1;
+              sfx.emerald();
+            } else if (invulnTimer <= 0) {
+              const dodgedLava = ent.type === "lava" && playerAction === "JUMP";
+              const dodgedGhast = ent.type === "ghast" && playerAction === "DUCK";
+
+              if (!dodgedLava && !dodgedGhast) {
+                ent.collected = true;
+                lives -= 1;
+                invulnTimer = 2.0;
+                sfx.hit();
+
+                if (lives <= 0) {
+                  gameRunning = false;
+                  sfx.gameOver();
+                  overlayTitle.textContent = "GAME OVER!";
+                  overlayTitle.style.color = "#ff5555";
+                  overlaySub.innerHTML = `Awesome run! You collected <strong>${score} Emeralds</strong>!`;
+                  playBtn.textContent = "↻ PLAY AGAIN";
+                  overlayScreen.classList.remove("hidden");
+                }
+              }
+            }
+          }
+        });
+
+        entities = entities.filter((e) => e.z < 1.08 && !e.collected);
+        entities.sort((a, b) => a.z - b.z);
+        updateHUD();
+      }
+
+      ctx.clearRect(0, 0, w, h);
+      drawWorld(w, h);
+      entities.forEach((ent) => drawEntity(ent, w, h));
+      drawPlayer(w, h);
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    requestAnimationFrame(gameLoop);
   </script>
 </body>
 </html>
