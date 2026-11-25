@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Temple Runner 3D - Cartoon Console Edition</title>
+  <title>Temple Runner 3D - 12-Hero Arcade Edition</title>
   <style>
     * {
       box-sizing: border-box;
@@ -60,9 +60,9 @@
     /* Top Glass HUD */
     #hud-top {
       position: absolute;
-      top: max(12px, env(safe-area-inset-top));
-      left: max(16px, env(safe-area-inset-left));
-      right: max(16px, env(safe-area-inset-right));
+      top: max(10px, env(safe-area-inset-top));
+      left: max(14px, env(safe-area-inset-left));
+      right: max(14px, env(safe-area-inset-right));
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
@@ -74,7 +74,7 @@
     .hud-cluster {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 6px;
       align-items: center;
     }
 
@@ -82,66 +82,62 @@
       display: flex;
       flex-direction: column;
       align-items: flex-end;
-      gap: 8px;
+      gap: 6px;
     }
 
     .glass-pill {
-      background: rgba(15, 23, 42, 0.65);
+      background: rgba(15, 23, 42, 0.7);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
-      border: 1.5px solid rgba(255, 255, 255, 0.22);
+      border: 1.5px solid rgba(255, 255, 255, 0.24);
       border-radius: 999px;
-      padding: 6px 15px;
+      padding: 5px 13px;
       display: flex;
       align-items: center;
-      gap: 7px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
+      gap: 6px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
       font-weight: 800;
-      font-size: 13.5px;
+      font-size: 13px;
       letter-spacing: 0.4px;
     }
 
     #hearts-display {
       color: #ff4757;
-      font-size: 19px;
+      font-size: 18px;
       text-shadow: 0 0 10px rgba(255, 71, 87, 0.7);
     }
 
-    #dist-display { color: #38bdf8; font-size: 15px; }
-    #score-display { color: #4ade80; font-size: 17px; }
+    #dist-display { color: #38bdf8; font-size: 14px; }
+    #score-display { color: #4ade80; font-size: 16px; }
     #best-display { color: #fbbf24; }
-    #turn-badge { background: rgba(234, 88, 12, 0.85); border-color: #fdba74; display: none; }
+    #turn-badge { background: rgba(234, 88, 12, 0.9); border-color: #fdba74; display: none; }
 
-    /* Active Power-up Badges */
-    #powerup-pills {
-      display: flex;
-      gap: 6px;
-    }
+    #powerup-pills { display: flex; gap: 6px; }
 
     .power-pill {
-      padding: 4px 12px;
+      padding: 4px 11px;
       border-radius: 999px;
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 900;
       display: none;
       animation: pulseGlow 1s infinite alternate;
     }
 
-    .power-pill.shield { background: rgba(14, 165, 233, 0.88); border: 1.5px solid #bae6fd; }
-    .power-pill.magnet { background: rgba(217, 70, 239, 0.88); border: 1.5px solid #f5d0fe; }
+    .power-pill.shield { background: rgba(14, 165, 233, 0.9); border: 1.5px solid #bae6fd; }
+    .power-pill.magnet { background: rgba(217, 70, 239, 0.9); border: 1.5px solid #f5d0fe; }
 
     @keyframes pulseGlow {
       from { transform: scale(1); }
       to { transform: scale(1.06); }
     }
 
-    /* Non-Blocking Top-Right Side Rainbow Milestone Toast */
+    /* Non-Blocking Side Rainbow Toast */
     #rainbow-toast {
       background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981, #3b82f6, #8b5cf6);
       border: 2px solid #ffffff;
       border-radius: 999px;
-      padding: 6px 16px;
-      font-size: 14px;
+      padding: 5px 14px;
+      font-size: 13px;
       font-weight: 900;
       color: #ffffff;
       text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
@@ -156,17 +152,16 @@
       opacity: 1;
     }
 
-    /* Compact Obstacle Action Hint (Tucked cleanly at top-center) */
     #action-banner {
       position: absolute;
-      top: 56px;
+      top: 52px;
       left: 50%;
       transform: translateX(-50%);
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 900;
-      padding: 5px 16px;
+      padding: 4px 15px;
       border-radius: 999px;
-      background: rgba(15, 23, 42, 0.82);
+      background: rgba(15, 23, 42, 0.85);
       border: 2px solid #fbbf24;
       color: #fbbf24;
       pointer-events: none;
@@ -178,24 +173,24 @@
     /* Collapsible TV Console Camera PiP Widget */
     #cam-pip {
       position: absolute;
-      bottom: max(14px, env(safe-area-inset-bottom));
-      left: max(16px, env(safe-area-inset-left));
-      width: 235px;
-      background: rgba(15, 23, 42, 0.82);
+      bottom: max(12px, env(safe-area-inset-bottom));
+      left: max(14px, env(safe-area-inset-left));
+      width: 225px;
+      background: rgba(15, 23, 42, 0.86);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       border: 1.5px solid rgba(255, 255, 255, 0.25);
       border-radius: 16px;
       overflow: hidden;
-      z-index: 25;
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+      z-index: 35;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
       transition: all 0.25s ease;
     }
 
     #cam-pip.minimized {
       width: auto;
       border-radius: 999px;
-      background: rgba(15, 23, 42, 0.65);
+      background: rgba(15, 23, 42, 0.72);
     }
 
     #cam-pip.minimized #cam-video-box,
@@ -205,7 +200,7 @@
 
     #pip-min-pill {
       display: none;
-      padding: 8px 15px;
+      padding: 7px 14px;
       font-size: 12px;
       font-weight: 800;
       color: #e2e8f0;
@@ -214,14 +209,12 @@
       gap: 6px;
     }
 
-    #cam-pip.minimized #pip-min-pill {
-      display: flex;
-    }
+    #cam-pip.minimized #pip-min-pill { display: flex; }
 
     #cam-video-box {
       position: relative;
       width: 100%;
-      height: 112px;
+      height: 104px;
       background: #090d16;
     }
 
@@ -267,7 +260,7 @@
       background: rgba(0, 0, 0, 0.6);
       align-items: center;
       justify-content: center;
-      font-size: 46px;
+      font-size: 44px;
       font-weight: 900;
       color: #fbbf24;
     }
@@ -276,7 +269,7 @@
       padding: 8px 10px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 5px;
     }
 
     .pip-btn-row { display: flex; gap: 6px; }
@@ -287,7 +280,7 @@
       color: #ffffff;
       border: none;
       border-radius: 8px;
-      padding: 7px 4px;
+      padding: 6px 4px;
       font-size: 11px;
       font-weight: 800;
       cursor: pointer;
@@ -305,13 +298,13 @@
       font-weight: 600;
     }
 
-    .mini-slider input { width: 88px; accent-color: #22c55e; }
+    .mini-slider input { width: 84px; accent-color: #22c55e; }
 
-    /* Hero Selection & Mode Overlay */
+    /* 12-Hero Arcade Selection Overlay */
     #overlay-screen {
       position: absolute;
       inset: 0;
-      background: radial-gradient(circle at center, rgba(14, 116, 144, 0.76), rgba(15, 23, 42, 0.94));
+      background: radial-gradient(circle at center, rgba(15, 23, 42, 0.72), rgba(9, 13, 22, 0.94));
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
       display: flex;
@@ -319,36 +312,41 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 16px;
+      padding: 10px 18px;
       z-index: 30;
     }
 
     #overlay-screen.hidden { display: none; }
 
+    .overlay-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 6px;
+    }
+
     #overlay-title {
-      font-size: 32px;
+      font-size: 26px;
       font-weight: 900;
       background: linear-gradient(90deg, #4ade80, #facc15, #38bdf8);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      margin-bottom: 4px;
     }
 
     #overlay-sub {
-      font-size: 13.5px;
-      color: #f1f5f9;
-      max-width: 520px;
-      margin-bottom: 12px;
+      font-size: 12.5px;
+      color: #e2e8f0;
+      margin-bottom: 8px;
     }
 
-    /* 1P vs 2 Brothers Mode Switcher */
     .mode-switch {
       display: flex;
-      background: rgba(15, 23, 42, 0.7);
-      border: 1.5px solid rgba(255, 255, 255, 0.2);
+      background: rgba(15, 23, 42, 0.78);
+      border: 1.5px solid rgba(255, 255, 255, 0.22);
       border-radius: 999px;
-      padding: 4px;
-      margin-bottom: 14px;
+      padding: 3px;
       gap: 4px;
     }
 
@@ -357,8 +355,8 @@
       color: #cbd5e1;
       border: none;
       border-radius: 999px;
-      padding: 6px 16px;
-      font-size: 12px;
+      padding: 5px 13px;
+      font-size: 11.5px;
       font-weight: 800;
       cursor: pointer;
     }
@@ -368,53 +366,73 @@
       color: #0f172a;
     }
 
+    /* 2x6 Responsive Arcade Hero Grid */
     .hero-grid {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 16px;
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 8px;
+      width: 100%;
+      max-width: 820px;
+      margin-bottom: 12px;
     }
 
     .hero-card {
-      background: rgba(30, 41, 59, 0.88);
-      border: 2px solid rgba(255, 255, 255, 0.18);
-      border-radius: 18px;
-      padding: 10px 16px;
+      background: rgba(30, 41, 59, 0.9);
+      border: 2px solid rgba(255, 255, 255, 0.16);
+      border-radius: 14px;
+      padding: 7px 6px;
       cursor: pointer;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 5px;
-      min-width: 112px;
-      transition: all 0.15s ease;
+      gap: 3px;
+      transition: all 0.14s ease;
     }
 
     .hero-card.selected {
       border-color: #4ade80;
-      background: rgba(74, 222, 128, 0.22);
-      transform: translateY(-4px) scale(1.04);
-      box-shadow: 0 10px 25px rgba(74, 222, 128, 0.35);
+      background: rgba(74, 222, 128, 0.24);
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 8px 20px rgba(74, 222, 128, 0.35);
     }
 
     .hero-avatar {
-      width: 44px;
-      height: 44px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
-      box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.25);
+      box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.28);
+      flex-shrink: 0;
     }
 
-    .hero-name { font-size: 14px; font-weight: 800; }
-    .hero-tag { font-size: 11px; color: #facc15; font-weight: 700; }
+    .hero-name {
+      font-size: 11.5px;
+      font-weight: 900;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+
+    .hero-style-badge {
+      font-size: 9px;
+      font-weight: 800;
+      padding: 1px 6px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.14);
+      color: #fde047;
+      white-space: nowrap;
+    }
 
     #play-btn {
       background: linear-gradient(135deg, #22c55e, #10b981);
       color: #052e16;
       border: none;
       border-radius: 999px;
-      padding: 13px 36px;
-      font-size: 17px;
+      padding: 11px 34px;
+      font-size: 16px;
       font-weight: 900;
       letter-spacing: 0.8px;
-      box-shadow: 0 10px 28px rgba(34, 197, 94, 0.45);
+      box-shadow: 0 10px 26px rgba(34, 197, 94, 0.45);
       cursor: pointer;
     }
 
@@ -446,10 +464,9 @@
       <div class="hud-right-stack">
         <div class="hud-cluster">
           <div class="glass-pill">BEST <span id="best-display">0</span></div>
-          <div class="glass-pill"><span id="item-label">EMERALDS</span> <span id="score-display">0</span></div>
+          <div class="glass-pill"><span id="item-label">OMNI-CORES</span> <span id="score-display">0</span></div>
         </div>
-        <!-- Non-blocking Side Rainbow Milestone Toast -->
-        <div id="rainbow-toast">🌈 250m! NEW WORLD!</div>
+        <div id="rainbow-toast">🌈 250m! NEW BIOME!</div>
       </div>
     </div>
 
@@ -485,35 +502,92 @@
       </div>
     </div>
 
-    <!-- Hero Select & 2-Brothers Mode Overlay -->
+    <!-- 12-Hero Arcade Selection Overlay -->
     <div id="overlay-screen">
-      <div id="overlay-title">TEMPLE RUNNER 3D</div>
-      <div id="overlay-sub">
-        Follow the <strong>Green Arches</strong>, jump <strong>Flames</strong>, duck <strong>Beams</strong>, and grab <strong>Shields &amp; Magnets</strong>!
+      <div class="overlay-header-row">
+        <div id="overlay-title">TEMPLE RUNNER 3D</div>
+        <div class="mode-switch">
+          <button class="mode-opt active" data-mode="1p">1 Player</button>
+          <button class="mode-opt" data-mode="2p">2 Brothers (Turn Mode)</button>
+        </div>
       </div>
-
-      <div class="mode-switch">
-        <button class="mode-opt active" data-mode="1p">1 Player</button>
-        <button class="mode-opt" data-mode="2p">2 Brothers (Turn Mode)</button>
+      <div id="overlay-sub">
+        Pick from <strong>12 Heroes</strong> — each transforms the entire 3D world theme!
       </div>
 
       <div class="hero-grid">
-        <div class="hero-card selected" data-char="steve">
-          <div class="hero-avatar" style="background: radial-gradient(circle at 50% 35%, #f5c6a5 40%, #00b4d8 42%);"></div>
+        <!-- ROW 1: FAMILY HEROES & CLASSIC GAMING -->
+        <div class="hero-card selected" data-char="isaac">
+          <div class="hero-avatar" style="background: radial-gradient(circle at 50% 35%, #f5c6a5 38%, #22c55e 40%, #ffffff 65%);"></div>
+          <div class="hero-name">ISAAC</div>
+          <div class="hero-style-badge">Ben 10 PBR</div>
+        </div>
+
+        <div class="hero-card" data-char="hayyan">
+          <div class="hero-avatar" style="background: radial-gradient(circle at 50% 35%, #f7d1b5 38%, #38bdf8 42%, #bae6fd 70%);"></div>
+          <div class="hero-name">HAYYAN</div>
+          <div class="hero-style-badge">Frozen Ice</div>
+        </div>
+
+        <div class="hero-card" data-char="sofea">
+          <div class="hero-avatar" style="background: radial-gradient(circle at 50% 35%, #f7d1b5 38%, #ec4899 42%, #facc15 70%); border: 2px solid #000;"></div>
+          <div class="hero-name">SOFEA</div>
+          <div class="hero-style-badge">Cartoon Ink</div>
+        </div>
+
+        <div class="hero-card" data-char="steve">
+          <div class="hero-avatar" style="background: linear-gradient(180deg, #4a2c18 25%, #f5c6a5 25% 55%, #00b4d8 55%); border-radius: 6px;"></div>
           <div class="hero-name">STEVE</div>
-          <div class="hero-tag">Emeralds</div>
+          <div class="hero-style-badge">Minecraft</div>
         </div>
 
         <div class="hero-card" data-char="alex">
-          <div class="hero-avatar" style="background: radial-gradient(circle at 50% 35%, #f7d1b5 40%, #52b788 42%);"></div>
+          <div class="hero-avatar" style="background: linear-gradient(180deg, #e85d04 25%, #f7d1b5 25% 55%, #52b788 55%); border-radius: 6px;"></div>
           <div class="hero-name">ALEX</div>
-          <div class="hero-tag">Emeralds</div>
+          <div class="hero-style-badge">Temple Block</div>
         </div>
 
         <div class="hero-card" data-char="sonic">
           <div class="hero-avatar" style="background: radial-gradient(circle at 50% 40%, #2563eb 52%, #f5c396 54%, #ef4444 78%);"></div>
           <div class="hero-name">SONIC</div>
-          <div class="hero-tag">Gold Rings</div>
+          <div class="hero-style-badge">Green Hill</div>
+        </div>
+
+        <!-- ROW 2: MARIO & ANIMATED FAVORITES -->
+        <div class="hero-card" data-char="mario">
+          <div class="hero-avatar" style="background: linear-gradient(180deg, #ef4444 32%, #f5c6a5 32% 62%, #2563eb 62%);"></div>
+          <div class="hero-name">MARIO</div>
+          <div class="hero-style-badge">Kingdom</div>
+        </div>
+
+        <div class="hero-card" data-char="mickey">
+          <div class="hero-avatar" style="background: linear-gradient(180deg, #111827 45%, #ef4444 45% 78%, #facc15 78%);"></div>
+          <div class="hero-name">MICKEY</div>
+          <div class="hero-style-badge">Toon Town</div>
+        </div>
+
+        <div class="hero-card" data-char="spongebob">
+          <div class="hero-avatar" style="background: linear-gradient(180deg, #facc15 62%, #ffffff 62% 76%, #78350f 76%); border-radius: 8px;"></div>
+          <div class="hero-name">SPONGEBOB</div>
+          <div class="hero-style-badge">Ocean Floor</div>
+        </div>
+
+        <div class="hero-card" data-char="aang">
+          <div class="hero-avatar" style="background: radial-gradient(circle at 50% 35%, #f5c6a5 40%, #f97316 42%, #facc15 72%);"></div>
+          <div class="hero-name">AANG</div>
+          <div class="hero-style-badge">Air Temple</div>
+        </div>
+
+        <div class="hero-card" data-char="doraemon">
+          <div class="hero-avatar" style="background: radial-gradient(circle at 50% 45%, #ffffff 42%, #0284c7 44%, #ef4444 78%);"></div>
+          <div class="hero-name">DORAEMON</div>
+          <div class="hero-style-badge">Tokyo Sky</div>
+        </div>
+
+        <div class="hero-card" data-char="sulley">
+          <div class="hero-avatar" style="background: radial-gradient(circle at 35% 35%, #a855f7 22%, #38bdf8 25%);"></div>
+          <div class="hero-name">SULLEY</div>
+          <div class="hero-style-badge">Monsters</div>
         </div>
       </div>
 
@@ -527,6 +601,178 @@
       FilesetResolver,
       PoseLandmarker
     } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
+
+    // --- 12-Character Theme Configuration Registry ---
+    const HERO_CONFIGS = {
+      isaac: {
+        name: "ISAAC",
+        item: "OMNI-CORES",
+        renderStyle: "pbr",
+        isBlocky: false,
+        skyTop: "#064e3b", skyMid: "#10b981", skyLow: "#fde68a",
+        fogColor: 0xa7f3d0,
+        roadBg: "#1e293b", roadTrim: "#22c55e", roadPattern: "tech",
+        grassColor: 0x15803d, treeColor: 0x16a34a,
+        propType: "rail",
+        bodyColor: 0xffffff, headColor: 0xf5c6a5, hairColor: 0x3b2314, legColor: 0x1e3a8a, shoeColor: 0x16a34a,
+        rewardColor: 0x22c55e, rewardShape: "gem",
+        accessory: "omnitrix"
+      },
+      hayyan: {
+        name: "HAYYAN",
+        item: "CRYSTALS",
+        renderStyle: "pbr",
+        isBlocky: false,
+        skyTop: "#0c4a6e", skyMid: "#38bdf8", skyLow: "#e0f2fe",
+        fogColor: 0xe0f2fe,
+        roadBg: "#1e3a8a", roadTrim: "#7dd3fc", roadPattern: "ice",
+        grassColor: 0xdbeafe, treeColor: 0x7dd3fc,
+        propType: "icePillar",
+        bodyColor: 0x38bdf8, headColor: 0xf7d1b5, hairColor: 0xfef08a, legColor: 0x0284c7, shoeColor: 0xe0f2fe,
+        rewardColor: 0x38bdf8, rewardShape: "gem",
+        accessory: "cape"
+      },
+      sofea: {
+        name: "SOFEA",
+        item: "STAR GEMS",
+        renderStyle: "toon",
+        isBlocky: false,
+        skyTop: "#831843", skyMid: "#f472b6", skyLow: "#fef08a",
+        fogColor: 0xfce7f3,
+        roadBg: "#31102f", roadTrim: "#facc15", roadPattern: "checker",
+        grassColor: 0x4ade80, treeColor: 0x22c55e,
+        propType: "rail",
+        bodyColor: 0xec4899, headColor: 0xf7d1b5, hairColor: 0x4a2c18, legColor: 0x7e22ce, shoeColor: 0xfacc15,
+        rewardColor: 0xfacc15, rewardShape: "star",
+        accessory: "backpack"
+      },
+      steve: {
+        name: "STEVE",
+        item: "EMERALDS",
+        renderStyle: "voxel",
+        isBlocky: true,
+        skyTop: "#0284c7", skyMid: "#38bdf8", skyLow: "#bae6fd",
+        fogColor: 0xbae6fd,
+        roadBg: "#57534e", roadTrim: "#4ade80", roadPattern: "cobble",
+        grassColor: 0x22c55e, treeColor: 0x15803d,
+        propType: "voxelTree",
+        bodyColor: 0x00b4d8, headColor: 0xf5c6a5, hairColor: 0x4a2c18, legColor: 0x1d4ed8, shoeColor: 0x334155,
+        rewardColor: 0x22c55e, rewardShape: "gem",
+        accessory: "none"
+      },
+      alex: {
+        name: "ALEX",
+        item: "EMERALDS",
+        renderStyle: "voxel",
+        isBlocky: true,
+        skyTop: "#0369a1", skyMid: "#38bdf8", skyLow: "#dcfce7",
+        fogColor: 0xdcfce7,
+        roadBg: "#574335", roadTrim: "#84cc16", roadPattern: "cobble",
+        grassColor: 0x4d7c0f, treeColor: 0x16a34a,
+        propType: "ruinPillar",
+        bodyColor: 0x52b788, headColor: 0xf7d1b5, hairColor: 0xe85d04, legColor: 0x5c4033, shoeColor: 0xd97706,
+        rewardColor: 0x22c55e, rewardShape: "gem",
+        accessory: "hat"
+      },
+      sonic: {
+        name: "SONIC",
+        item: "GOLD RINGS",
+        renderStyle: "toon",
+        isBlocky: false,
+        skyTop: "#0284c7", skyMid: "#0ea5e9", skyLow: "#bae6fd",
+        fogColor: 0xbae6fd,
+        roadBg: "#451a03", roadTrim: "#22c55e", roadPattern: "checker",
+        grassColor: 0x22c55e, treeColor: 0x16a34a,
+        propType: "rail",
+        bodyColor: 0x2563eb, headColor: 0x2563eb, hairColor: 0x2563eb, legColor: 0x2563eb, shoeColor: 0xef4444,
+        rewardColor: 0xfacc15, rewardShape: "ring",
+        accessory: "sonic"
+      },
+      mario: {
+        name: "MARIO",
+        item: "GOLD COINS",
+        renderStyle: "pbr",
+        isBlocky: false,
+        skyTop: "#1d4ed8", skyMid: "#60a5fa", skyLow: "#dbeafe",
+        fogColor: 0xdbeafe,
+        roadBg: "#991b1b", roadTrim: "#facc15", roadPattern: "cobble",
+        grassColor: 0x22c55e, treeColor: 0x16a34a,
+        propType: "warpPipe",
+        bodyColor: 0x2563eb, headColor: 0xf5c6a5, hairColor: 0x4a2c18, legColor: 0x1d4ed8, shoeColor: 0x78350f,
+        rewardColor: 0xfacc15, rewardShape: "ring",
+        accessory: "marioCap"
+      },
+      mickey: {
+        name: "MICKEY",
+        item: "GOLD STARS",
+        renderStyle: "toon",
+        isBlocky: false,
+        skyTop: "#1e3a8a", skyMid: "#3b82f6", skyLow: "#fef08a",
+        fogColor: 0xfef9c3,
+        roadBg: "#1f2937", roadTrim: "#ef4444", roadPattern: "checker",
+        grassColor: 0x4ade80, treeColor: 0x16a34a,
+        propType: "rail",
+        bodyColor: 0x111827, headColor: 0x111827, hairColor: 0x111827, legColor: 0xef4444, shoeColor: 0xfacc15,
+        rewardColor: 0xfacc15, rewardShape: "star",
+        accessory: "mickeyEars"
+      },
+      spongebob: {
+        name: "SPONGEBOB",
+        item: "PATTIES",
+        renderStyle: "toon",
+        isBlocky: true,
+        skyTop: "#0369a1", skyMid: "#06b6d4", skyLow: "#a5f3fc",
+        fogColor: 0xa5f3fc,
+        roadBg: "#ca8a04", roadTrim: "#38bdf8", roadPattern: "sand",
+        grassColor: 0xfde047, treeColor: 0xf43f5e,
+        propType: "coral",
+        bodyColor: 0xfacc15, headColor: 0xfacc15, hairColor: 0xfacc15, legColor: 0x78350f, shoeColor: 0x111827,
+        rewardColor: 0xd97706, rewardShape: "ring",
+        accessory: "none"
+      },
+      aang: {
+        name: "AANG",
+        item: "AIR ORBS",
+        renderStyle: "pbr",
+        isBlocky: false,
+        skyTop: "#b45309", skyMid: "#fb923c", skyLow: "#fef3c7",
+        fogColor: 0xfef3c7,
+        roadBg: "#57534e", roadTrim: "#38bdf8", roadPattern: "cobble",
+        grassColor: 0x65a30d, treeColor: 0x4d7c0f,
+        propType: "ruinPillar",
+        bodyColor: 0xf97316, headColor: 0xf5c6a5, hairColor: 0xf5c6a5, legColor: 0xeab308, shoeColor: 0x78350f,
+        rewardColor: 0x38bdf8, rewardShape: "orb",
+        accessory: "airArrow"
+      },
+      doraemon: {
+        name: "DORAEMON",
+        item: "DORAYAKI",
+        renderStyle: "toon",
+        isBlocky: false,
+        skyTop: "#0284c7", skyMid: "#38bdf8", skyLow: "#ffffff",
+        fogColor: 0xe0f2fe,
+        roadBg: "#1e40af", roadTrim: "#ef4444", roadPattern: "tech",
+        grassColor: 0x4ade80, treeColor: 0x22c55e,
+        propType: "rail",
+        bodyColor: 0x0284c7, headColor: 0x0284c7, hairColor: 0x0284c7, legColor: 0x0284c7, shoeColor: 0xffffff,
+        rewardColor: 0xb45309, rewardShape: "ring",
+        accessory: "bell"
+      },
+      sulley: {
+        name: "SULLEY",
+        item: "CANISTERS",
+        renderStyle: "pbr",
+        isBlocky: false,
+        skyTop: "#312e81", skyMid: "#6366f1", skyLow: "#e0e7ff",
+        fogColor: 0xe0e7ff,
+        roadBg: "#334155", roadTrim: "#a855f7", roadPattern: "tech",
+        grassColor: 0x1e293b, treeColor: 0x06b6d4,
+        propType: "ruinPillar",
+        bodyColor: 0x38bdf8, headColor: 0x38bdf8, hairColor: 0xa855f7, legColor: 0x0284c7, shoeColor: 0x7e22ce,
+        rewardColor: 0xfacc15, rewardShape: "orb",
+        accessory: "horns"
+      }
+    };
 
     // --- DOM References ---
     const threeCanvas = document.getElementById("three-canvas");
@@ -566,7 +812,6 @@
     const vertSlider = document.getElementById("vert-slider");
     const vertVal = document.getElementById("vert-val");
 
-    // --- TV Console Mode Collapse / Expand ---
     pipCollapseBtn.addEventListener("click", () => camPip.classList.add("minimized"));
     pipMinPill.addEventListener("click", () => camPip.classList.remove("minimized"));
 
@@ -604,13 +849,9 @@
         playTone(680, "sine", 0.09);
         setTimeout(() => playTone(1020, "sine", 0.18), 65);
       },
-      powerup: () => {
-        [440, 587, 880].forEach((n, i) => setTimeout(() => playTone(n, "triangle", 0.16), i * 65));
-      },
+      powerup: () => [440, 587, 880].forEach((n, i) => setTimeout(() => playTone(n, "triangle", 0.16), i * 65)),
       shieldBreak: () => playTone(380, "sawtooth", 0.25, 160),
-      rainbow: () => {
-        [523, 587, 659, 784, 880, 1046].forEach((n, i) => setTimeout(() => playTone(n, "sine", 0.25), i * 80));
-      },
+      rainbow: () => [523, 587, 659, 784, 880, 1046].forEach((n, i) => setTimeout(() => playTone(n, "sine", 0.25), i * 80)),
       hit: () => playTone(130, "sawtooth", 0.35, 50),
       celebrate: () => [523, 659, 784, 1046].forEach((n, i) => setTimeout(() => playTone(n, "triangle", 0.25), i * 110))
     };
@@ -619,8 +860,8 @@
       try { if ("wakeLock" in navigator) await navigator.wakeLock.request("screen"); } catch (e) {}
     }
 
-    // --- Procedural Textures (High-Contrast Dark Road vs Bright Cartoon Obstacles) ---
-    function createSkyTexture(biomeIndex) {
+    // --- Procedural Sky & Track Textures ---
+    function createSkyTexture(cfg, biomeIndex) {
       const c = document.createElement("canvas");
       c.width = 32;
       c.height = 512;
@@ -628,23 +869,17 @@
       const grad = g.createLinearGradient(0, 0, 0, 512);
 
       if (biomeIndex === 1) {
-        // Golden Sunset Desert
         grad.addColorStop(0.0, "#c2410c");
-        grad.addColorStop(0.48, "#fb923c");
-        grad.addColorStop(0.85, "#fde68a");
+        grad.addColorStop(0.5, "#fb923c");
         grad.addColorStop(1.0, "#fef3c7");
       } else if (biomeIndex >= 2) {
-        // Starry Crystal Night
         grad.addColorStop(0.0, "#090d16");
         grad.addColorStop(0.55, "#1e1b4b");
-        grad.addColorStop(0.9, "#312e81");
         grad.addColorStop(1.0, "#4338ca");
       } else {
-        // Sunny Cartoon Sky
-        grad.addColorStop(0.0, "#0284c7");
-        grad.addColorStop(0.45, "#38bdf8");
-        grad.addColorStop(0.8, "#bae6fd");
-        grad.addColorStop(1.0, "#e0f2fe");
+        grad.addColorStop(0.0, cfg.skyTop);
+        grad.addColorStop(0.55, cfg.skyMid);
+        grad.addColorStop(1.0, cfg.skyLow);
       }
 
       g.fillStyle = grad;
@@ -654,28 +889,57 @@
       return tex;
     }
 
-    function createTrackTexture(isSonic) {
+    function createTrackTexture(cfg) {
       const c = document.createElement("canvas");
       c.width = 512;
       c.height = 512;
       const g = c.getContext("2d");
 
-      // Deep dark slate/earth road so bright cartoon obstacles pop with high contrast!
-      g.fillStyle = isSonic ? "#3b2314" : "#27303f";
+      g.fillStyle = cfg.roadBg;
       g.fillRect(0, 0, 512, 512);
 
-      for (let y = 0; y < 512; y += 64) {
-        g.fillStyle = (y / 64) % 2 === 0 ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.16)";
-        g.fillRect(18, y, 476, 56);
+      if (cfg.roadPattern === "cobble") {
+        for (let y = 0; y < 512; y += 64) {
+          for (let x = 20; x < 480; x += 76) {
+            const offset = (y / 64) % 2 === 0 ? 0 : 28;
+            g.fillStyle = "rgba(255,255,255,0.12)";
+            g.fillRect(x + offset, y + 6, 66, 50);
+            g.strokeStyle = "rgba(0,0,0,0.35)";
+            g.lineWidth = 4;
+            g.strokeRect(x + offset, y + 6, 66, 50);
+          }
+        }
+      } else if (cfg.roadPattern === "checker") {
+        g.fillStyle = "rgba(255,255,255,0.14)";
+        for (let y = 0; y < 512; y += 64) {
+          for (let x = 16; x < 496; x += 64) {
+            if (((x + y) / 64) % 2 === 0) g.fillRect(x, y, 64, 64);
+          }
+        }
+      } else if (cfg.roadPattern === "ice") {
+        g.strokeStyle = "rgba(255,255,255,0.45)";
+        g.lineWidth = 3;
+        for (let y = 0; y < 512; y += 85) {
+          g.beginPath();
+          g.moveTo(20, y + 15);
+          g.lineTo(180, y + 40);
+          g.lineTo(490, y + 10);
+          g.stroke();
+        }
+      } else {
+        for (let y = 0; y < 512; y += 64) {
+          g.fillStyle = (y / 64) % 2 === 0 ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.16)";
+          g.fillRect(18, y, 476, 56);
+        }
       }
 
       // Bright Side Curbs
-      g.fillStyle = isSonic ? "#facc15" : "#22c55e";
-      g.fillRect(0, 0, 16, 512);
-      g.fillRect(496, 0, 16, 512);
+      g.fillStyle = cfg.roadTrim;
+      g.fillRect(0, 0, 18, 512);
+      g.fillRect(494, 0, 18, 512);
 
-      // Crisp White Dashed Lane Lines
-      g.fillStyle = "rgba(255, 255, 255, 0.45)";
+      // Crisp Lane Dividers
+      g.fillStyle = "rgba(255, 255, 255, 0.52)";
       g.fillRect(169, 16, 6, 480);
       g.fillRect(337, 16, 6, 480);
 
@@ -692,9 +956,9 @@
       c.width = 256;
       c.height = 64;
       const g = c.getContext("2d");
-      g.fillStyle = "#d946ef"; // Vivid Electric Magenta
+      g.fillStyle = "#d946ef";
       g.fillRect(0, 0, 256, 64);
-      g.fillStyle = "#facc15"; // Bright Warning Yellow
+      g.fillStyle = "#facc15";
       for (let x = -64; x < 320; x += 32) {
         g.beginPath();
         g.moveTo(x, 64);
@@ -717,11 +981,11 @@
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.1;
+    renderer.toneMappingExposure = 1.12;
 
     const scene = new THREE.Scene();
-    scene.background = createSkyTexture(0);
-    scene.fog = new THREE.FogExp2(0xbae6fd, 0.008);
+    scene.background = createSkyTexture(HERO_CONFIGS.isaac, 0);
+    scene.fog = new THREE.FogExp2(0xa7f3d0, 0.0075);
 
     const camera = new THREE.PerspectiveCamera(56, window.innerWidth / window.innerHeight, 0.1, 200);
     camera.position.set(0, 5.1, 10.4);
@@ -733,10 +997,10 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x4ade80, 1.2);
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x4ade80, 1.25);
     scene.add(hemiLight);
 
-    const sunLight = new THREE.DirectionalLight(0xfffbeb, 1.85);
+    const sunLight = new THREE.DirectionalLight(0xfffbeb, 1.9);
     sunLight.position.set(18, 32, 20);
     sunLight.castShadow = true;
     sunLight.shadow.mapSize.set(1024, 1024);
@@ -760,9 +1024,9 @@
     const LANE_WIDTH = 3.1;
     const TRACK_LENGTH = 160;
     const TRACK_REPEATS = 16;
-    let trackTex = createTrackTexture(false);
+    let trackTex = createTrackTexture(HERO_CONFIGS.isaac);
     const trackGeo = new THREE.PlaneGeometry(LANE_WIDTH * 3.2, TRACK_LENGTH);
-    const trackMat = new THREE.MeshStandardMaterial({ map: trackTex, roughness: 0.78, metalness: 0.05 });
+    const trackMat = new THREE.MeshStandardMaterial({ map: trackTex, roughness: 0.72, metalness: 0.08 });
     const trackMesh = new THREE.Mesh(trackGeo, trackMat);
     trackMesh.rotation.x = -Math.PI / 2;
     trackMesh.position.z = -65;
@@ -770,7 +1034,7 @@
     scene.add(trackMesh);
 
     const grassGeo = new THREE.PlaneGeometry(240, 200);
-    const grassMat = new THREE.MeshStandardMaterial({ color: 0x4ade80, roughness: 0.85 });
+    const grassMat = new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.85 });
     const grassMesh = new THREE.Mesh(grassGeo, grassMat);
     grassMesh.rotation.x = -Math.PI / 2;
     grassMesh.position.set(0, -0.05, -75);
@@ -784,26 +1048,116 @@
       scene.add(hill);
     });
 
-    // Scenic Trees
+    // --- Multi-Theme Roadside Scenery ---
     const sceneryGroup = new THREE.Group();
     scene.add(sceneryGroup);
-    const treeTrunkMat = new THREE.MeshStandardMaterial({ color: 0x78350f });
-    const treeLeafMat = new THREE.MeshStandardMaterial({ color: 0x16a34a, roughness: 0.6 });
+    const treeTrunkMat = new THREE.MeshStandardMaterial({ color: 0x6b3e26 });
+    const treeLeafMat = new THREE.MeshStandardMaterial({ color: 0x16a34a, roughness: 0.55 });
+    const woodRailMat = new THREE.MeshStandardMaterial({ color: 0x92400e, roughness: 0.7 });
+    const ruinStoneMat = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.8 });
+    const warpPipeMat = new THREE.MeshStandardMaterial({ color: 0x16a34a, roughness: 0.35, metalness: 0.1 });
+    const icePillarMat = new THREE.MeshStandardMaterial({ color: 0xbae6fd, emissive: 0x38bdf8, emissiveIntensity: 0.3 });
+    const coralMat = new THREE.MeshStandardMaterial({ color: 0xf43f5e, roughness: 0.5 });
+    const inkOutlineMat = new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.BackSide });
 
     for (let i = 0; i < 24; i++) {
       const zPos = -i * 6.5;
       [-1, 1].forEach((side) => {
-        const tree = new THREE.Group();
-        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.48, 3.0, 10), treeTrunkMat);
-        trunk.position.y = 1.5;
-        trunk.castShadow = true;
-        const crown = new THREE.Mesh(new THREE.SphereGeometry(2.0, 14, 14), treeLeafMat);
-        crown.position.y = 3.8;
-        crown.castShadow = true;
-        tree.add(trunk, crown);
-        tree.position.set(side * (7.6 + (i % 3) * 1.4), 0, zPos);
-        sceneryGroup.add(tree);
+        const propUnit = new THREE.Group();
+        propUnit.position.set(side * 5.2, 0, zPos);
+
+        // 0: Wooden Guardrail
+        const railGroup = new THREE.Group();
+        const post = new THREE.Mesh(new THREE.BoxGeometry(0.32, 1.35, 0.32), woodRailMat);
+        post.position.y = 0.68;
+        const beam = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.24, 6.6), woodRailMat);
+        beam.position.y = 1.05;
+        railGroup.add(post, beam);
+
+        // 1: Stone Temple Pillar
+        const ruinPillar = new THREE.Mesh(new THREE.BoxGeometry(0.85, 2.5 + (i % 3) * 0.6, 0.85), ruinStoneMat);
+        ruinPillar.position.set(side * 0.4, 1.25, 0);
+
+        // 2: Mario Green Warp Pipe
+        const warpPipe = new THREE.Group();
+        warpPipe.position.set(side * 0.5, 0, 0);
+        const pipeBody = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.65, 1.8, 16), warpPipeMat);
+        pipeBody.position.y = 0.9;
+        const pipeRim = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.8, 0.45, 16), warpPipeMat);
+        pipeRim.position.y = 1.85;
+        warpPipe.add(pipeBody, pipeRim);
+
+        // 3: Frozen Ice Crystal Spire
+        const icePillar = new THREE.Mesh(new THREE.ConeGeometry(0.75, 3.2 + (i % 2) * 1.1, 6), icePillarMat);
+        icePillar.position.set(side * 0.5, 1.6, 0);
+
+        // 4: Bikini Bottom Coral Cluster
+        const coralGroup = new THREE.Group();
+        coralGroup.position.set(side * 0.6, 0, 0);
+        const c1 = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.3, 1.8, 8), coralMat);
+        c1.position.y = 0.9;
+        const c2 = new THREE.Mesh(new THREE.SphereGeometry(0.65, 10, 10), coralMat);
+        c2.position.set(0.3, 1.4, 0);
+        coralGroup.add(c1, c2);
+
+        // 5: Multi-Tiered Layered Pine Tree
+        const pineTree = new THREE.Group();
+        pineTree.position.set(side * (2.6 + (i % 3) * 1.1), 0, 0);
+        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.45, 2.2, 10), treeTrunkMat);
+        trunk.position.y = 1.1;
+        const tier1 = new THREE.Mesh(new THREE.ConeGeometry(2.1, 2.5, 10), treeLeafMat);
+        tier1.position.y = 2.8;
+        const tier2 = new THREE.Mesh(new THREE.ConeGeometry(1.6, 2.2, 10), treeLeafMat);
+        tier2.position.y = 4.2;
+        const tier3 = new THREE.Mesh(new THREE.ConeGeometry(1.05, 1.8, 10), treeLeafMat);
+        tier3.position.y = 5.4;
+
+        // Ink Outline for Toon Heroes
+        const inkGroup = new THREE.Group();
+        [tier1, tier2, tier3].forEach((t, idx) => {
+          const ik = new THREE.Mesh(new THREE.ConeGeometry(2.22 - idx * 0.52, 2.65 - idx * 0.35, 10), inkOutlineMat);
+          ik.position.copy(t.position);
+          inkGroup.add(ik);
+        });
+        pineTree.add(trunk, tier1, tier2, tier3, inkGroup);
+
+        // 6: Voxel Cube Tree (For Steve)
+        const voxelTree = new THREE.Group();
+        voxelTree.position.set(side * (2.6 + (i % 3) * 1.1), 0, 0);
+        const vTrunk = new THREE.Mesh(new THREE.BoxGeometry(0.7, 2.4, 0.7), treeTrunkMat);
+        vTrunk.position.y = 1.2;
+        const vCrown = new THREE.Mesh(new THREE.BoxGeometry(2.5, 2.2, 2.5), treeLeafMat);
+        vCrown.position.y = 3.2;
+        voxelTree.add(vTrunk, vCrown);
+
+        propUnit.add(railGroup, ruinPillar, warpPipe, icePillar, coralGroup, pineTree, voxelTree);
+        sceneryGroup.add(propUnit);
       });
+    }
+
+    // Running Dust Trail Particles
+    const dustParticles = [];
+    const dustGeo = new THREE.SphereGeometry(0.22, 8, 8);
+    const dustMat = new THREE.MeshBasicMaterial({ color: 0xfef3c7, transparent: true, opacity: 0.65 });
+    for (let i = 0; i < 16; i++) {
+      const p = new THREE.Mesh(dustGeo, dustMat.clone());
+      p.visible = false;
+      scene.add(p);
+      dustParticles.push({ mesh: p, life: 0, vx: 0, vy: 0, vz: 0 });
+    }
+    let dustSpawnTimer = 0;
+
+    function spawnDustPuff(x, y, z) {
+      const slot = dustParticles.find((d) => d.life <= 0);
+      if (!slot) return;
+      slot.life = 0.45;
+      slot.mesh.position.set(x + (Math.random() - 0.5) * 0.5, y + 0.15, z + 0.3);
+      slot.mesh.scale.setScalar(0.7 + Math.random() * 0.6);
+      slot.mesh.material.opacity = 0.65;
+      slot.mesh.visible = true;
+      slot.vx = (Math.random() - 0.5) * 1.4;
+      slot.vy = 0.8 + Math.random() * 0.9;
+      slot.vz = 2.5;
     }
 
     // Clouds & Birds
@@ -854,30 +1208,23 @@
     rainbowGroup.visible = false;
     scene.add(rainbowGroup);
 
-    // --- Smooth Rounded Cartoon Character Rig (Replacing Blocky Cubes!) ---
+    // --- Hybrid Cartoon + Voxel Hero Rig (Supports all 12 Heroes) ---
     const heroRoot = new THREE.Group();
     scene.add(heroRoot);
 
-    const heroBodyMat = new THREE.MeshStandardMaterial({ color: 0x00b4d8, roughness: 0.4 });
-    const heroHeadMat = new THREE.MeshStandardMaterial({ color: 0xf5c6a5, roughness: 0.5 });
-    const heroHairMat = new THREE.MeshStandardMaterial({ color: 0x4a2c18, roughness: 0.7 });
-    const heroLegMat = new THREE.MeshStandardMaterial({ color: 0x1d4ed8, roughness: 0.5 });
+    const heroBodyMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.35 });
+    const heroHeadMat = new THREE.MeshStandardMaterial({ color: 0xf5c6a5, roughness: 0.45 });
+    const heroHairMat = new THREE.MeshStandardMaterial({ color: 0x4a2c18, roughness: 0.65 });
+    const heroLegMat = new THREE.MeshStandardMaterial({ color: 0x1d4ed8, roughness: 0.45 });
     const heroShoeMat = new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.35 });
     const gloveMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.4 });
-    const sonicBallMat = new THREE.MeshStandardMaterial({
-      color: 0x2563eb,
-      emissive: 0x1d4ed8,
-      emissiveIntensity: 0.4,
-      roughness: 0.25,
-      metalness: 0.2
-    });
+    const sonicBallMat = new THREE.MeshStandardMaterial({ color: 0x2563eb, emissive: 0x1d4ed8, emissiveIntensity: 0.5 });
 
-    // Rounded Capsule Limbs + Cartoon Sneakers
+    // Rounded Cartoon Parts
     const leftLegGroup = new THREE.Group();
     leftLegGroup.position.set(-0.28, 0.9, 0);
     const leftLegMesh = new THREE.Mesh(new THREE.CapsuleGeometry(0.19, 0.48, 8, 12), heroLegMat);
     leftLegMesh.position.y = -0.35;
-    leftLegMesh.castShadow = true;
     const leftShoe = new THREE.Mesh(new THREE.SphereGeometry(0.26, 12, 12), heroShoeMat);
     leftShoe.scale.set(1.0, 0.7, 1.45);
     leftShoe.position.set(0, -0.72, -0.08);
@@ -887,18 +1234,24 @@
     rightLegGroup.position.set(0.28, 0.9, 0);
     const rightLegMesh = new THREE.Mesh(new THREE.CapsuleGeometry(0.19, 0.48, 8, 12), heroLegMat);
     rightLegMesh.position.y = -0.35;
-    rightLegMesh.castShadow = true;
     const rightShoe = new THREE.Mesh(new THREE.SphereGeometry(0.26, 12, 12), heroShoeMat);
     rightShoe.scale.set(1.0, 0.7, 1.45);
     rightShoe.position.set(0, -0.72, -0.08);
     rightLegGroup.add(rightLegMesh, rightShoe);
 
-    // Rounded Capsule Torso
     const torsoMesh = new THREE.Mesh(new THREE.CapsuleGeometry(0.48, 0.55, 10, 16), heroBodyMat);
     torsoMesh.position.set(0, 1.5, 0);
     torsoMesh.castShadow = true;
 
-    // Rounded Arms + White Cartoon Gloves
+    // Voxel Box Parts (Used for Steve, Alex, SpongeBob)
+    const voxelTorso = new THREE.Mesh(new THREE.BoxGeometry(0.95, 1.05, 0.58), heroBodyMat);
+    voxelTorso.position.set(0, 1.5, 0);
+    voxelTorso.visible = false;
+
+    const voxelHead = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.95, 0.95), heroHeadMat);
+    voxelHead.position.set(0, 2.55, 0);
+    voxelHead.visible = false;
+
     const leftArmGroup = new THREE.Group();
     leftArmGroup.position.set(-0.66, 1.82, 0);
     const leftArmMesh = new THREE.Mesh(new THREE.CapsuleGeometry(0.15, 0.46, 8, 12), heroHeadMat);
@@ -915,75 +1268,180 @@
     rightGlove.position.y = -0.62;
     rightArmGroup.add(rightArmMesh, rightGlove);
 
-    // Expressive Oversized Cartoon Head
     const headGroup = new THREE.Group();
     headGroup.position.set(0, 2.55, 0);
     const headSphere = new THREE.Mesh(new THREE.SphereGeometry(0.58, 18, 18), heroHeadMat);
-    headSphere.castShadow = true;
-
+    const headInkOutline = new THREE.Mesh(new THREE.SphereGeometry(0.64, 18, 18), inkOutlineMat);
     const hairDome = new THREE.Mesh(
       new THREE.SphereGeometry(0.61, 16, 16, 0, Math.PI * 2, 0, Math.PI * 0.55),
       heroHairMat
     );
     hairDome.rotation.x = 0.25;
+    headGroup.add(headSphere, headInkOutline, hairDome);
 
-    // Sonic Quills
+    // Character-Specific Accessories
+    const accGroup = new THREE.Group();
+    heroRoot.add(accGroup);
+
+    // 1. Isaac Omnitrix Green Wrist Glow
+    const omnitrix = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.2, 0.2, 0.16, 12),
+      new THREE.MeshBasicMaterial({ color: 0x22c55e })
+    );
+    omnitrix.position.set(-0.66, 1.25, 0);
+
+    // 2. Hayyan Ice Cape
+    const iceCape = new THREE.Mesh(
+      new THREE.BoxGeometry(0.85, 1.2, 0.08),
+      new THREE.MeshStandardMaterial({ color: 0xbae6fd, transparent: true, opacity: 0.78 })
+    );
+    iceCape.position.set(0, 1.45, 0.48);
+    iceCape.rotation.x = 0.22;
+
+    // 3. Sofea Explorer Backpack
+    const backpack = new THREE.Mesh(
+      new THREE.BoxGeometry(0.64, 0.7, 0.34),
+      new THREE.MeshStandardMaterial({ color: 0x9333ea })
+    );
+    backpack.position.set(0, 1.55, 0.48);
+
+    // 4. Alex Explorer Hat
+    const explorerHat = new THREE.Group();
+    const hatBrim = new THREE.Mesh(new THREE.CylinderGeometry(0.92, 0.95, 0.1, 18), new THREE.MeshStandardMaterial({ color: 0xd97706 }));
+    hatBrim.position.y = 2.92;
+    const hatCrown = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.58, 0.42, 18), new THREE.MeshStandardMaterial({ color: 0xd97706 }));
+    hatCrown.position.y = 3.12;
+    explorerHat.add(hatBrim, hatCrown);
+
+    // 5. Mario Red Cap
+    const marioCap = new THREE.Mesh(
+      new THREE.SphereGeometry(0.63, 16, 16, 0, Math.PI * 2, 0, Math.PI * 0.52),
+      new THREE.MeshStandardMaterial({ color: 0xef4444 })
+    );
+    marioCap.position.set(0, 2.58, 0);
+
+    // 6. Mickey Round Ears
+    const mickeyEars = new THREE.Group();
+    const earL = new THREE.Mesh(new THREE.SphereGeometry(0.32, 14, 14), new THREE.MeshStandardMaterial({ color: 0x111827 }));
+    earL.position.set(-0.52, 3.15, 0);
+    const earR = new THREE.Mesh(new THREE.SphereGeometry(0.32, 14, 14), new THREE.MeshStandardMaterial({ color: 0x111827 }));
+    earR.position.set(0.52, 3.15, 0);
+    mickeyEars.add(earL, earR);
+
+    // 7. Aang Glowing Blue Air Arrow
+    const airArrow = new THREE.Mesh(
+      new THREE.BoxGeometry(0.18, 0.12, 0.65),
+      new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
+    );
+    airArrow.position.set(0, 3.12, -0.1);
+
+    // 8. Doraemon Golden Bell & Red Collar
+    const doraBell = new THREE.Group();
+    const collar = new THREE.Mesh(new THREE.TorusGeometry(0.46, 0.08, 10, 20), new THREE.MeshStandardMaterial({ color: 0xef4444 }));
+    collar.rotation.x = Math.PI / 2;
+    collar.position.y = 2.02;
+    const bell = new THREE.Mesh(new THREE.SphereGeometry(0.15, 12, 12), new THREE.MeshStandardMaterial({ color: 0xfacc15 }));
+    bell.position.set(0, 1.98, -0.46);
+    doraBell.add(collar, bell);
+
+    // 9. Sulley Curved Horns
+    const sulleyHorns = new THREE.Group();
+    const hornL = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.45, 10), new THREE.MeshStandardMaterial({ color: 0xfef3c7 }));
+    hornL.position.set(-0.42, 3.15, 0);
+    hornL.rotation.z = 0.45;
+    const hornR = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.45, 10), new THREE.MeshStandardMaterial({ color: 0xfef3c7 }));
+    hornR.position.set(0.42, 3.15, 0);
+    hornR.rotation.z = -0.45;
+    sulleyHorns.add(hornL, hornR);
+
+    // 10. Sonic Quills
     const sonicSpikes = new THREE.Group();
     [-0.22, 0.08, 0.34].forEach((sy, idx) => {
       const spike = new THREE.Mesh(new THREE.ConeGeometry(0.26, 0.9, 10), sonicBallMat);
       spike.rotation.x = Math.PI * 0.64;
-      spike.position.set(0, sy, 0.56 - idx * 0.05);
+      spike.position.set(0, 2.55 + sy, 0.56 - idx * 0.05);
       sonicSpikes.add(spike);
     });
-    sonicSpikes.visible = false;
-    headGroup.add(headSphere, hairDome, sonicSpikes);
 
-    // Sonic Spin-Dash Energy Sphere
+    accGroup.add(omnitrix, iceCape, backpack, explorerHat, marioCap, mickeyEars, airArrow, doraBell, sulleyHorns, sonicSpikes);
+
     const spinBall = new THREE.Mesh(new THREE.SphereGeometry(0.88, 22, 22), sonicBallMat);
     spinBall.position.set(0, 0.9, 0);
-    spinBall.castShadow = true;
     spinBall.visible = false;
 
-    // Translucent Shield Bubble Aura around Player
     const shieldBubble = new THREE.Mesh(
       new THREE.SphereGeometry(1.75, 24, 24),
-      new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.32, wireframe: false })
+      new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.34 })
     );
     shieldBubble.position.set(0, 1.6, 0);
     shieldBubble.visible = false;
 
-    heroRoot.add(leftLegGroup, rightLegGroup, torsoMesh, leftArmGroup, rightArmGroup, headGroup, spinBall, shieldBubble);
+    heroRoot.add(leftLegGroup, rightLegGroup, torsoMesh, voxelTorso, leftArmGroup, rightArmGroup, headGroup, voxelHead, spinBall, shieldBubble);
 
-    let selectedChar = "steve";
-    function applyHeroTheme(char) {
-      selectedChar = char;
-      const isSonic = char === "sonic";
-      trackTex = createTrackTexture(isSonic);
+    // --- Switch Hero & Entire 3D World Style ---
+    let selectedChar = "isaac";
+
+    function applyHeroAndArtStyle(charKey) {
+      selectedChar = charKey;
+      const cfg = HERO_CONFIGS[charKey] || HERO_CONFIGS.isaac;
+
+      trackTex = createTrackTexture(cfg);
       trackMat.map = trackTex;
       trackMat.needsUpdate = true;
 
-      sonicSpikes.visible = isSonic;
-      hairDome.visible = !isSonic;
+      scene.background = createSkyTexture(cfg, biomeStage);
+      scene.fog.color.setHex(cfg.fogColor);
+      grassMat.color.setHex(cfg.grassColor);
+      treeLeafMat.color.setHex(cfg.treeColor);
 
-      if (char === "steve") {
-        heroBodyMat.color.setHex(0x00b4d8);
-        heroHeadMat.color.setHex(0xf5c6a5);
-        heroHairMat.color.setHex(0x4a2c18);
-        heroLegMat.color.setHex(0x1d4ed8);
-        heroShoeMat.color.setHex(0x334155);
-      } else if (char === "alex") {
-        heroBodyMat.color.setHex(0x52b788);
-        heroHeadMat.color.setHex(0xf7d1b5);
-        heroHairMat.color.setHex(0xe85d04);
-        heroLegMat.color.setHex(0x5c4033);
-        heroShoeMat.color.setHex(0xd97706);
-      } else {
-        heroBodyMat.color.setHex(0x2563eb);
-        heroHeadMat.color.setHex(0x2563eb);
-        heroLegMat.color.setHex(0x2563eb);
-        heroShoeMat.color.setHex(0xef4444);
-      }
-      itemLabel.textContent = isSonic ? "RINGS" : "EMERALDS";
+      const isToon = cfg.renderStyle === "toon";
+
+      // Update Roadside Scenery
+      sceneryGroup.children.forEach((propUnit) => {
+        const [railGroup, ruinPillar, warpPipe, icePillar, coralGroup, pineTree, voxelTree] = propUnit.children;
+        railGroup.visible = cfg.propType === "rail";
+        ruinPillar.visible = cfg.propType === "ruinPillar";
+        warpPipe.visible = cfg.propType === "warpPipe";
+        icePillar.visible = cfg.propType === "icePillar";
+        coralGroup.visible = cfg.propType === "coral";
+        voxelTree.visible = cfg.propType === "voxelTree";
+        pineTree.visible = cfg.propType !== "voxelTree";
+
+        const inkGroup = pineTree.children[4];
+        if (inkGroup) inkGroup.visible = isToon;
+      });
+
+      // Update Hero Colors & Proportions
+      heroBodyMat.color.setHex(cfg.bodyColor);
+      heroHeadMat.color.setHex(cfg.headColor);
+      heroHairMat.color.setHex(cfg.hairColor);
+      heroLegMat.color.setHex(cfg.legColor);
+      heroShoeMat.color.setHex(cfg.shoeColor);
+
+      torsoMesh.visible = !cfg.isBlocky;
+      voxelTorso.visible = cfg.isBlocky;
+      headGroup.visible = !cfg.isBlocky;
+      voxelHead.visible = cfg.isBlocky;
+      headInkOutline.visible = isToon && !cfg.isBlocky;
+      hairDome.visible = !cfg.isBlocky && cfg.accessory !== "sonic" && cfg.accessory !== "marioCap" && cfg.accessory !== "mickeyEars" && cfg.accessory !== "airArrow";
+
+      // Toggle Character-Specific Accessories
+      omnitrix.visible = cfg.accessory === "omnitrix";
+      iceCape.visible = cfg.accessory === "cape";
+      backpack.visible = cfg.accessory === "backpack";
+      explorerHat.visible = cfg.accessory === "hat";
+      marioCap.visible = cfg.accessory === "marioCap";
+      mickeyEars.visible = cfg.accessory === "mickeyEars";
+      airArrow.visible = cfg.accessory === "airArrow";
+      doraBell.visible = cfg.accessory === "bell";
+      sulleyHorns.visible = cfg.accessory === "horns";
+      sonicSpikes.visible = cfg.accessory === "sonic";
+
+      rewardMat.color.setHex(cfg.rewardColor);
+      rewardMat.emissive.setHex(cfg.rewardColor);
+      rewardMat.emissiveIntensity = cfg.renderStyle === "pbr" ? 0.95 : 0.65;
+
+      itemLabel.textContent = cfg.item;
     }
 
     heroCards.forEach((card) => {
@@ -992,50 +1450,29 @@
         sfx.beep();
         heroCards.forEach((c) => c.classList.remove("selected"));
         card.classList.add("selected");
-        applyHeroTheme(card.dataset.char);
+        applyHeroAndArtStyle(card.dataset.char);
       });
     });
 
-    // --- High-Contrast Cartoon Obstacles, Safe Arrows & Power-Ups ---
-    // Vibrant Coral-Red & Gold Temple Walls (Never blends with dark slate road!)
+    // --- High-Contrast Cartoon Obstacles & Power-Ups ---
     const wallBrickMat = new THREE.MeshStandardMaterial({ color: 0xe11d48, roughness: 0.55 });
     const wallTrimMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.4 });
-    const safeArchMat = new THREE.MeshStandardMaterial({
-      color: 0x22c55e,
-      emissive: 0x16a34a,
-      emissiveIntensity: 0.75
-    });
+    const safeArchMat = new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x16a34a, emissiveIntensity: 0.8 });
 
     const ironMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.7, roughness: 0.3 });
-    const fireCoreMat = new THREE.MeshStandardMaterial({
-      color: 0xfef08a,
-      emissive: 0xf97316,
-      emissiveIntensity: 1.6
-    });
-    const hazardMat = new THREE.MeshStandardMaterial({
-      map: createHazardTexture(),
-      emissive: 0xd946ef,
-      emissiveIntensity: 0.45
-    });
-    const beamShadowMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.5 });
+    const fireCoreMat = new THREE.MeshStandardMaterial({ color: 0xfef08a, emissive: 0xf97316, emissiveIntensity: 1.65 });
+    const hazardMat = new THREE.MeshStandardMaterial({ map: createHazardTexture(), emissive: 0xd946ef, emissiveIntensity: 0.45 });
+    const beamShadowMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.55 });
 
     const rewardMat = new THREE.MeshStandardMaterial({
       color: 0x22c55e,
       emissive: 0x16a34a,
-      emissiveIntensity: 0.55,
-      metalness: 0.4,
+      emissiveIntensity: 0.9,
+      metalness: 0.35,
       roughness: 0.2
     });
-    const shieldItemMat = new THREE.MeshStandardMaterial({
-      color: 0x38bdf8,
-      emissive: 0x0284c7,
-      emissiveIntensity: 0.8
-    });
-    const magnetItemMat = new THREE.MeshStandardMaterial({
-      color: 0xe879f9,
-      emissive: 0xc026d3,
-      emissiveIntensity: 0.8
-    });
+    const shieldItemMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 0.85 });
+    const magnetItemMat = new THREE.MeshStandardMaterial({ color: 0xe879f9, emissive: 0xc026d3, emissiveIntensity: 0.85 });
 
     let activeObstacles = [];
     let activeRewards = [];
@@ -1058,7 +1495,6 @@
       const roll = Math.random();
 
       if (roll < 0.44) {
-        // 1. HIGH-CONTRAST TEMPLE MAZE GATE (Coral-Red Walls + Glowing Green Safe Arch + Downward Arrow)
         const gateGroup = new THREE.Group();
         gateGroup.position.set(0, 0, spawnZ);
 
@@ -1069,7 +1505,6 @@
             topLintel.position.set(lx, 4.4, 0);
             const neonArch = new THREE.Mesh(new THREE.BoxGeometry(LANE_WIDTH * 0.92, 0.3, 1.75), safeArchMat);
             neonArch.position.set(lx, 3.75, 0);
-            // Floating Green Safe-Path Arrow Cone
             const arrow = new THREE.Mesh(new THREE.ConeGeometry(0.45, 0.85, 12), safeArchMat);
             arrow.rotation.x = Math.PI;
             arrow.position.set(lx, 2.95, 0);
@@ -1089,7 +1524,6 @@
         spawnRewardLine(safeLane, spawnZ);
 
       } else if (roll < 0.74) {
-        // 2. ROARING FLAMETHROWER TRAP (Jump Over!)
         const flameGroup = new THREE.Group();
         flameGroup.position.set(safeLane * LANE_WIDTH, 0, spawnZ);
 
@@ -1107,7 +1541,6 @@
         activeObstacles.push({ type: "flame", lane: safeLane, mesh: flameGroup, fireJet, hit: false });
 
       } else {
-        // 3. HIGH MAGENTA/YELLOW HAZARD BEAM + BRIGHT CYAN FLOOR SHADOW (Duck Under!)
         const beamGroup = new THREE.Group();
         beamGroup.position.set(safeLane * LANE_WIDTH, 0, spawnZ);
 
@@ -1119,7 +1552,6 @@
         const beam = new THREE.Mesh(new THREE.BoxGeometry(LANE_WIDTH * 0.94, 1.1, 0.85), hazardMat);
         beam.position.set(0, 2.6, 0);
 
-        // Bright Cyan Ground Zone showing clearly where to slide/duck underneath
         const floorZone = new THREE.Mesh(new THREE.PlaneGeometry(LANE_WIDTH * 0.85, 2.4), beamShadowMat);
         floorZone.rotation.x = -Math.PI / 2;
         floorZone.position.set(0, 0.04, 0);
@@ -1129,7 +1561,6 @@
         activeObstacles.push({ type: "beam", lane: safeLane, mesh: beamGroup, hit: false });
       }
 
-      // 28% chance to spawn a Shield or Magnet Power-up on an open lane
       if (Math.random() < 0.28) {
         const pType = Math.random() < 0.55 ? "shield" : "magnet";
         const pGeo = pType === "shield"
@@ -1143,13 +1574,14 @@
     }
 
     function spawnRewardLine(lane, zStart) {
-      rewardMat.color.setHex(selectedChar === "sonic" ? 0xfacc15 : 0x22c55e);
-      rewardMat.emissive.setHex(selectedChar === "sonic" ? 0xeab308 : 0x16a34a);
-
+      const cfg = HERO_CONFIGS[selectedChar] || HERO_CONFIGS.isaac;
       for (let i = 0; i < 3; i++) {
-        const geo = selectedChar === "sonic"
-          ? new THREE.TorusGeometry(0.55, 0.14, 12, 24)
-          : new THREE.OctahedronGeometry(0.6, 0);
+        let geo;
+        if (cfg.rewardShape === "ring") geo = new THREE.TorusGeometry(0.55, 0.14, 12, 24);
+        else if (cfg.rewardShape === "orb") geo = new THREE.SphereGeometry(0.52, 14, 14);
+        else if (cfg.rewardShape === "star") geo = new THREE.DodecahedronGeometry(0.56, 0);
+        else geo = new THREE.OctahedronGeometry(0.6, 0);
+
         const mesh = new THREE.Mesh(geo, rewardMat);
         mesh.position.set(lane * LANE_WIDTH, 1.35, zStart - i * 3.6);
         mesh.castShadow = true;
@@ -1158,33 +1590,25 @@
       }
     }
 
-    // --- Biome Switching on Every 250m Rainbow ---
     function applyBiome(biomeIdx) {
-      scene.background = createSkyTexture(biomeIdx);
+      const cfg = HERO_CONFIGS[selectedChar] || HERO_CONFIGS.isaac;
+      scene.background = createSkyTexture(cfg, biomeIdx);
       if (biomeIdx === 1) {
-        // Golden Sunset Desert
         scene.fog.color.setHex(0xfde68a);
         grassMat.color.setHex(0xd97706);
         hillMat.color.setHex(0xb45309);
-        treeLeafMat.color.setHex(0x65a30d);
       } else if (biomeIdx >= 2) {
-        // Starry Crystal Night
         scene.fog.color.setHex(0x1e1b4b);
         grassMat.color.setHex(0x1e293b);
         hillMat.color.setHex(0x312e81);
-        treeLeafMat.color.setHex(0x06b6d4);
       } else {
-        // Sunny Green Meadow
-        scene.fog.color.setHex(0xbae6fd);
-        grassMat.color.setHex(0x4ade80);
-        hillMat.color.setHex(0x22c55e);
-        treeLeafMat.color.setHex(0x16a34a);
+        applyHeroAndArtStyle(selectedChar);
       }
     }
 
     // --- Game State, Physics & 2-Brothers Turn Mode ---
     let gameRunning = false;
-    let gameMode = "1p"; // "1p" or "2p"
+    let gameMode = "1p";
     let currentBrother = 1;
     let brother1Score = 0;
 
@@ -1200,9 +1624,8 @@
     let shieldActive = false;
     let magnetTimer = 0;
     let spawnDistAccumulator = 0;
-    let rainbowSafeBuffer = 0; // Prevents obstacles spawning hidden behind the rainbow arch
+    let rainbowSafeBuffer = 0;
 
-    // Smooth Parabolic Jump Physics & Banking
     let playerLane = 0;
     let jumpY = 0;
     let jumpVelY = 0;
@@ -1244,10 +1667,9 @@
       if (!isDucking) sfx.duck();
       isDucking = true;
       duckTimer = 0.85;
-      if (jumpY > 0.1) jumpVelY = -14; // Fast-drop into slide
+      if (jumpY > 0.1) jumpVelY = -14;
     }
 
-    // Touch Swipe Controls
     let touchStartX = 0;
     let touchStartY = 0;
 
@@ -1441,7 +1863,6 @@
       isDucking = false;
       duckTimer = 0;
 
-      // Auto-minimize camera setup drawer for clean TV Console view
       camPip.classList.add("minimized");
       updateHUD();
       overlayScreen.classList.add("hidden");
@@ -1464,13 +1885,13 @@
       shieldBubble.visible = shieldActive;
     }
 
+    applyHeroAndArtStyle("isaac");
     let lastTime = performance.now();
 
     function animate(now) {
       const dt = Math.min(0.05, (now - lastTime) / 1000);
       lastTime = now;
 
-      // Animate Clouds & Birds
       clouds.forEach((c) => {
         c.mesh.position.x += c.speed * dt;
         if (c.mesh.position.x > 55) c.mesh.position.x = -55;
@@ -1484,13 +1905,22 @@
         b.rightWing.rotation.z = -flap;
       });
 
-      // Smooth Lateral Slide + Cartoon Banking Tilt
+      dustParticles.forEach((d) => {
+        if (d.life > 0) {
+          d.life -= dt;
+          d.mesh.position.x += d.vx * dt;
+          d.mesh.position.y += d.vy * dt;
+          d.mesh.position.z += d.vz * dt;
+          d.mesh.material.opacity = Math.max(0, d.life * 1.4);
+          if (d.life <= 0) d.mesh.visible = false;
+        }
+      });
+
       const targetX = playerLane * LANE_WIDTH;
       const dxLane = targetX - heroRoot.position.x;
       heroRoot.position.x += dxLane * 11 * dt;
       heroRoot.rotation.z = THREE.MathUtils.clamp(-dxLane * 0.14, -0.28, 0.28);
 
-      // Parabolic Gravity Jump Physics
       if (jumpY > 0 || jumpVelY > 0) {
         jumpY += jumpVelY * dt;
         jumpVelY += GRAVITY * dt;
@@ -1498,19 +1928,25 @@
           jumpY = 0;
           jumpVelY = 0;
           landingSquash = 0.22;
+          spawnDustPuff(heroRoot.position.x, 0, 0);
         }
       }
       heroRoot.position.y = jumpY;
 
       if (landingSquash > 0) landingSquash = Math.max(0, landingSquash - dt * 1.4);
 
+      const cfg = HERO_CONFIGS[selectedChar] || HERO_CONFIGS.isaac;
       const isAirborne = jumpY > 0.15;
       const isSonicBall = selectedChar === "sonic" && (isAirborne || isDucking);
-      leftLegGroup.visible = rightLegGroup.visible = torsoMesh.visible = leftArmGroup.visible = rightArmGroup.visible = headGroup.visible = !isSonicBall;
+
+      leftLegGroup.visible = rightLegGroup.visible = leftArmGroup.visible = rightArmGroup.visible = accGroup.visible = !isSonicBall;
+      torsoMesh.visible = !cfg.isBlocky && !isSonicBall;
+      voxelTorso.visible = cfg.isBlocky && !isSonicBall;
+      headGroup.visible = !cfg.isBlocky && !isSonicBall;
+      voxelHead.visible = cfg.isBlocky && !isSonicBall;
       spinBall.visible = isSonicBall;
       if (isSonicBall) spinBall.rotation.x -= 20 * dt;
 
-      // Smooth Running Stride & Squash/Stretch
       const runCycle = Math.sin(now * 0.014);
       leftLegGroup.rotation.x = isAirborne ? 0.55 : runCycle * 0.75;
       rightLegGroup.rotation.x = isAirborne ? -0.45 : -runCycle * 0.75;
@@ -1526,6 +1962,14 @@
       heroRoot.visible = invulnTimer <= 0 || Math.floor(now / 80) % 2 === 0;
 
       if (gameRunning) {
+        if (!isAirborne) {
+          dustSpawnTimer += dt;
+          if (dustSpawnTimer >= 0.14) {
+            dustSpawnTimer = 0;
+            spawnDustPuff(heroRoot.position.x, 0, 0);
+          }
+        }
+
         if (duckTimer > 0) {
           duckTimer -= dt;
           if (duckTimer <= 0) isDucking = false;
@@ -1536,12 +1980,11 @@
         const moveStep = worldSpeed * dt;
         trackTex.offset.y += (moveStep / TRACK_LENGTH) * TRACK_REPEATS;
 
-        // Distance & Non-Blocking Side Rainbow Milestone + Biome Portal
         distanceMeters += moveStep * 1.6;
         if (distanceMeters >= nextRainbowMilestone) {
           rainbowGroup.position.set(0, 0, -118);
           rainbowGroup.visible = true;
-          rainbowSafeBuffer = 26; // Keep 26m behind rainbow completely obstacle-free!
+          rainbowSafeBuffer = 26;
           biomeStage += 1;
           applyBiome(biomeStage);
           sfx.rainbow();
@@ -1557,9 +2000,9 @@
           if (rainbowGroup.position.z > 18) rainbowGroup.visible = false;
         }
 
-        sceneryGroup.children.forEach((tree) => {
-          tree.position.z += moveStep;
-          if (tree.position.z > 12) tree.position.z -= 156;
+        sceneryGroup.children.forEach((propUnit) => {
+          propUnit.position.z += moveStep;
+          if (propUnit.position.z > 12) propUnit.position.z -= 156;
         });
 
         if (rainbowSafeBuffer > 0) {
@@ -1572,7 +2015,6 @@
           }
         }
 
-        // Update Rewards (With Treasure Magnet Pull!)
         activeRewards.forEach((r) => {
           r.mesh.position.z += moveStep;
           r.mesh.rotation.y += 3.2 * dt;
@@ -1594,7 +2036,6 @@
           }
         });
 
-        // Update Power-Ups
         activePowerups.forEach((p) => {
           p.mesh.position.z += moveStep;
           p.mesh.rotation.y += 2.8 * dt;
@@ -1607,7 +2048,6 @@
           }
         });
 
-        // Update Obstacles & Action Banner
         let nearestPrompt = null;
         activeObstacles.forEach((obs) => {
           obs.mesh.position.z += moveStep;
@@ -1630,7 +2070,6 @@
             if (crashed) {
               obs.hit = true;
               if (shieldActive) {
-                // Shield absorbs the crash!
                 shieldActive = false;
                 invulnTimer = 1.2;
                 sfx.shieldBreak();
@@ -1642,7 +2081,7 @@
                 if (lives <= 0) {
                   gameRunning = false;
                   sfx.celebrate();
-                  const unit = selectedChar === "sonic" ? "Gold Rings" : "Emeralds";
+                  const unit = cfg.item;
 
                   if (gameMode === "2p" && currentBrother === 1) {
                     brother1Score = score;
@@ -1659,7 +2098,7 @@
                     playBtn.dataset.nextTurn = "";
                     overlayScreen.classList.remove("hidden");
                   } else {
-                    overlayTitle.textContent = "AWESOME 3D RUN!";
+                    overlayTitle.textContent = `${cfg.name} RUN COMPLETE!`;
                     overlaySub.innerHTML = `You ran <strong>${Math.floor(distanceMeters)}m</strong> and collected <strong>${score} ${unit}</strong>!`;
                     playBtn.textContent = "↻ PLAY AGAIN";
                     playBtn.dataset.nextTurn = "";
