@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Temple Runner 3D - Custom Heroes &amp; Canyon Ruins</title>
+  <title>Temple Runner 3D - Ultimate Co-Op &amp; Boss Chase Edition</title>
   <style>
     * {
       box-sizing: border-box;
@@ -28,7 +28,7 @@
       touch-action: none;
     }
 
-    button, input, .hero-card, .mode-opt, #pip-min-pill {
+    button, input, .hero-card, .mode-opt, .trail-btn, #pip-min-pill {
       touch-action: manipulation;
       cursor: pointer;
     }
@@ -62,12 +62,68 @@
       display: block;
     }
 
+    /* Screen-Edge Camera Distance Proximity Lights (Left = P1/Solo, Right = P2 Co-Op) */
+    .edge-alert {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      width: 34px;
+      pointer-events: none;
+      z-index: 28;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .edge-alert.active {
+      opacity: 1;
+      animation: edgePulse 0.65s infinite alternate;
+    }
+
+    #edge-alert-left {
+      left: 0;
+      background: linear-gradient(90deg, rgba(239, 68, 68, 0.9), rgba(239, 68, 68, 0));
+      box-shadow: inset 12px 0 28px rgba(239, 68, 68, 0.95);
+    }
+
+    #edge-alert-right {
+      right: 0;
+      background: linear-gradient(270deg, rgba(239, 68, 68, 0.9), rgba(239, 68, 68, 0));
+      box-shadow: inset -12px 0 28px rgba(239, 68, 68, 0.95);
+    }
+
+    .edge-label {
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      color: #ffffff;
+      background: rgba(185, 28, 28, 0.92);
+      border: 1.5px solid #fecaca;
+      padding: 10px 4px;
+      border-radius: 999px;
+      text-align: center;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+    }
+
+    #edge-alert-left .edge-label {
+      transform: rotate(180deg);
+    }
+
+    @keyframes edgePulse {
+      from { opacity: 0.55; }
+      to { opacity: 1; }
+    }
+
     /* Top Glass HUD */
     #hud-top {
       position: absolute;
       top: max(10px, env(safe-area-inset-top));
-      left: max(14px, env(safe-area-inset-left));
-      right: max(14px, env(safe-area-inset-right));
+      left: max(18px, env(safe-area-inset-left));
+      right: max(18px, env(safe-area-inset-right));
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
@@ -91,7 +147,7 @@
     }
 
     .glass-pill {
-      background: rgba(15, 23, 42, 0.72);
+      background: rgba(15, 23, 42, 0.74);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       border: 1.5px solid rgba(255, 255, 255, 0.25);
@@ -120,7 +176,7 @@
     #dist-display { color: #38bdf8; font-size: 14px; }
     #score-display { color: #4ade80; font-size: 16px; }
     #best-display { color: #fbbf24; }
-    #turn-badge { background: rgba(234, 88, 12, 0.9); border-color: #fdba74; display: none; }
+    #coop-badge { background: rgba(14, 165, 233, 0.88); border-color: #bae6fd; display: none; }
 
     #powerup-pills { display: flex; gap: 6px; }
 
@@ -141,7 +197,7 @@
       to { transform: scale(1.06); }
     }
 
-    /* Non-Blocking Side Rainbow Toast */
+    /* Non-Blocking Side Rainbow & Boss Toast */
     #rainbow-toast {
       background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981, #3b82f6, #8b5cf6);
       border: 2px solid #ffffff;
@@ -184,9 +240,9 @@
     #cam-pip {
       position: absolute;
       bottom: max(12px, env(safe-area-inset-bottom));
-      left: max(14px, env(safe-area-inset-left));
+      left: max(18px, env(safe-area-inset-left));
       width: 225px;
-      background: rgba(15, 23, 42, 0.9);
+      background: rgba(15, 23, 42, 0.92);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       border: 1.5px solid rgba(255, 255, 255, 0.25);
@@ -201,7 +257,7 @@
     #cam-pip.minimized {
       width: auto;
       border-radius: 999px;
-      background: rgba(15, 23, 42, 0.78);
+      background: rgba(15, 23, 42, 0.8);
     }
 
     #cam-pip.minimized #cam-video-box,
@@ -258,9 +314,9 @@
       position: absolute;
       top: 6px;
       right: 8px;
-      background: rgba(239, 68, 68, 0.85);
+      background: rgba(239, 68, 68, 0.88);
       color: #fff;
-      border: 1px solid rgba(255,255,255,0.4);
+      border: 1px solid rgba(255, 255, 255, 0.4);
       border-radius: 999px;
       padding: 4px 10px;
       font-size: 10.5px;
@@ -316,11 +372,11 @@
 
     .mini-slider input { width: 84px; accent-color: #22c55e; }
 
-    /* 12-Hero Arcade Selection Overlay */
+    /* 12-Hero Arcade Selection & Trail Vault Overlay */
     #overlay-screen {
       position: absolute;
       inset: 0;
-      background: radial-gradient(circle at center, rgba(15, 23, 42, 0.72), rgba(9, 13, 22, 0.94));
+      background: radial-gradient(circle at center, rgba(15, 23, 42, 0.74), rgba(9, 13, 22, 0.95));
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
       display: flex;
@@ -328,7 +384,7 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 10px 18px;
+      padding: 8px 18px;
       z-index: 30;
     }
 
@@ -338,13 +394,13 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 14px;
+      gap: 12px;
       flex-wrap: wrap;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
 
     #overlay-title {
-      font-size: 26px;
+      font-size: 24px;
       font-weight: 900;
       background: linear-gradient(90deg, #4ade80, #facc15, #38bdf8);
       -webkit-background-clip: text;
@@ -352,14 +408,14 @@
     }
 
     #overlay-sub {
-      font-size: 12.5px;
+      font-size: 12px;
       color: #e2e8f0;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .mode-switch {
       display: flex;
-      background: rgba(15, 23, 42, 0.78);
+      background: rgba(15, 23, 42, 0.8);
       border: 1.5px solid rgba(255, 255, 255, 0.22);
       border-radius: 999px;
       padding: 3px;
@@ -372,7 +428,7 @@
       border: none;
       border-radius: 999px;
       padding: 5px 13px;
-      font-size: 11.5px;
+      font-size: 11px;
       font-weight: 800;
     }
 
@@ -381,44 +437,100 @@
       color: #0f172a;
     }
 
+    /* Unlockable Footstep Trails Bar */
+    .trail-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+      background: rgba(15, 23, 42, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .trail-btn {
+      background: rgba(51, 65, 85, 0.8);
+      color: #e2e8f0;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 999px;
+      padding: 3px 9px;
+      font-size: 10.5px;
+      font-weight: 800;
+    }
+
+    .trail-btn.active {
+      background: #22c55e;
+      color: #052e16;
+      border-color: #86efac;
+    }
+
     .hero-grid {
       display: grid;
       grid-template-columns: repeat(6, minmax(0, 1fr));
-      gap: 8px;
+      gap: 7px;
       width: 100%;
       max-width: 820px;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
 
     .hero-card {
+      position: relative;
       background: rgba(30, 41, 59, 0.9);
       border: 2px solid rgba(255, 255, 255, 0.16);
-      border-radius: 14px;
-      padding: 7px 6px;
+      border-radius: 13px;
+      padding: 6px 5px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 3px;
+      gap: 2px;
       transition: all 0.14s ease;
     }
 
-    .hero-card.selected {
+    .hero-card.selected-p1 {
       border-color: #4ade80;
       background: rgba(74, 222, 128, 0.24);
-      transform: translateY(-2px) scale(1.03);
-      box-shadow: 0 8px 20px rgba(74, 222, 128, 0.35);
+      transform: translateY(-2px);
     }
 
+    .hero-card.selected-p2 {
+      border-color: #38bdf8;
+      background: rgba(56, 189, 248, 0.24);
+      transform: translateY(-2px);
+    }
+
+    .hero-card.selected-p1.selected-p2 {
+      border-color: #facc15;
+    }
+
+    .p-tag {
+      position: absolute;
+      top: 3px;
+      font-size: 8.5px;
+      font-weight: 900;
+      padding: 1px 5px;
+      border-radius: 999px;
+      display: none;
+    }
+
+    .p-tag.p1 { left: 4px; background: #22c55e; color: #052e16; }
+    .p-tag.p2 { right: 4px; background: #38bdf8; color: #082f49; }
+
+    .hero-card.selected-p1 .p-tag.p1 { display: block; }
+    .hero-card.selected-p2 .p-tag.p2 { display: block; }
+
     .hero-avatar {
-      width: 32px;
-      height: 32px;
+      width: 30px;
+      height: 30px;
       border-radius: 50%;
       box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.28);
       flex-shrink: 0;
     }
 
     .hero-name {
-      font-size: 11.5px;
+      font-size: 11px;
       font-weight: 900;
       white-space: nowrap;
       overflow: hidden;
@@ -427,7 +539,7 @@
     }
 
     .hero-style-badge {
-      font-size: 9px;
+      font-size: 8.5px;
       font-weight: 800;
       padding: 1px 6px;
       border-radius: 999px;
@@ -441,8 +553,8 @@
       color: #052e16;
       border: none;
       border-radius: 999px;
-      padding: 11px 34px;
-      font-size: 16px;
+      padding: 10px 34px;
+      font-size: 15.5px;
       font-weight: 900;
       letter-spacing: 0.8px;
       box-shadow: 0 10px 26px rgba(34, 197, 94, 0.45);
@@ -458,13 +570,21 @@
     <p style="color:#e2e8f0;">Turn off Portrait Orientation Lock in Control Center to play in 16:9 widescreen.</p>
   </div>
 
+  <!-- Screen-Edge Camera Distance Proximity Lights -->
+  <div id="edge-alert-left" class="edge-alert">
+    <div id="edge-text-left" class="edge-label">⚠ STEP BACK</div>
+  </div>
+  <div id="edge-alert-right" class="edge-alert">
+    <div id="edge-text-right" class="edge-label">⚠ STEP BACK</div>
+  </div>
+
   <div id="game-container">
     <canvas id="three-canvas"></canvas>
 
     <!-- Top Glass HUD -->
     <div id="hud-top">
       <div class="hud-cluster">
-        <div id="turn-badge" class="glass-pill">BROTHER 1</div>
+        <div id="coop-badge" class="glass-pill">2P CO-OP</div>
         <div class="glass-pill">NYAWA <span id="hearts-display">♥♥♥</span></div>
         <div class="glass-pill">DIST <span id="dist-display">0m</span></div>
         <button id="bgm-btn" class="glass-pill" type="button" title="Toggle Background Music">🎵 MUSIC: ON</button>
@@ -476,7 +596,7 @@
 
       <div class="hud-right-stack">
         <div class="hud-cluster">
-          <div class="glass-pill">BEST <span id="best-display">0</span></div>
+          <div class="glass-pill">VAULT <span id="best-display">0</span></div>
           <div class="glass-pill"><span id="item-label">OMNI-CORES</span> <span id="score-display">0</span></div>
         </div>
         <div id="rainbow-toast">🌈 250m! NEW BIOME!</div>
@@ -520,82 +640,102 @@
       <div class="overlay-header-row">
         <div id="overlay-title">TEMPLE RUNNER 3D</div>
         <div class="mode-switch">
-          <button class="mode-opt active" data-mode="1p" type="button">1 Player</button>
-          <button class="mode-opt" data-mode="2p" type="button">2 Brothers (Turn Mode)</button>
+          <button class="mode-opt active" data-mode="solo" type="button">1 Player (Solo)</button>
+          <button class="mode-opt" data-mode="coop" type="button">2 Players (Co-Op Together!)</button>
         </div>
       </div>
       <div id="overlay-sub">
-        Pick from <strong>12 Custom Sculpted Heroes</strong> — Each with authentic outfit textures &amp; canyon ruins!
+        <strong>Solo:</strong> Pick 1 Hero &bull; <strong>Co-Op:</strong> Pick 2 Heroes (Left &amp; Right players run together!)
+      </div>
+
+      <div class="trail-bar">
+        <span>🏆 Vault: <strong id="vault-count">0</strong> | Trail:</span>
+        <button class="trail-btn active" data-trail="dust" data-cost="0" type="button">Dust (Free)</button>
+        <button class="trail-btn" data-trail="rainbow" data-cost="15" type="button">🌈 Rainbow (15)</button>
+        <button class="trail-btn" data-trail="fire" data-cost="30" type="button">🔥 Fire (30)</button>
+        <button class="trail-btn" data-trail="stars" data-cost="50" type="button">✨ Stars (50)</button>
       </div>
 
       <div class="hero-grid">
-        <div class="hero-card selected" data-char="isaac">
+        <div class="hero-card selected-p1" data-char="isaac">
+          <span class="p-tag p1">P1</span><span class="p-tag p2">P2</span>
           <div class="hero-avatar" style="background: radial-gradient(circle at 50% 35%, #f5c6a5 38%, #22c55e 40%, #ffffff 65%);"></div>
           <div class="hero-name">ISAAC</div>
           <div class="hero-style-badge">Ben 10</div>
         </div>
 
-        <div class="hero-card" data-char="hayyan">
+        <div class="hero-card selected-p2" data-char="hayyan">
+          <span class="p-tag p1">P1</span><span class="p-tag p2">P2</span>
           <div class="hero-avatar" style="background: radial-gradient(circle at 50% 35%, #f7d1b5 38%, #38bdf8 42%, #bae6fd 70%);"></div>
           <div class="hero-name">HAYYAN</div>
           <div class="hero-style-badge">Frozen Ice</div>
         </div>
 
         <div class="hero-card" data-char="sofea">
+          <span class="p-tag p1">P1</span><span class="p-tag p2">P2</span>
           <div class="hero-avatar" style="background: radial-gradient(circle at 50% 35%, #f7d1b5 38%, #ec4899 42%, #facc15 70%);"></div>
           <div class="hero-name">SOFEA</div>
           <div class="hero-style-badge">Star Explorer</div>
         </div>
 
         <div class="hero-card" data-char="steve">
+          <span class="p-tag p1">P1</span><span class="p-tag p2">P2</span>
           <div class="hero-avatar" style="background: linear-gradient(180deg, #4a2c18 25%, #f5c6a5 25% 55%, #00b4d8 55%); border-radius: 6px;"></div>
           <div class="hero-name">STEVE</div>
           <div class="hero-style-badge">Minecraft</div>
         </div>
 
         <div class="hero-card" data-char="alex">
+          <span class="p-tag p1">P1</span><span class="p-tag p2">P2</span>
           <div class="hero-avatar" style="background: linear-gradient(180deg, #e85d04 25%, #f7d1b5 25% 55%, #52b788 55%); border-radius: 6px;"></div>
           <div class="hero-name">ALEX</div>
           <div class="hero-style-badge">Minecraft</div>
         </div>
 
         <div class="hero-card" data-char="sonic">
+          <span class="p-tag p1">P1</span><span class="p-tag p2">P2</span>
           <div class="hero-avatar" style="background: radial-gradient(circle at 50% 40%, #2563eb 52%, #f5c396 54%, #ef4444 78%);"></div>
           <div class="hero-name">SONIC</div>
           <div class="hero-style-badge">Speedster</div>
         </div>
 
         <div class="hero-card" data-char="mario">
+          <span class="p-tag p1">P1</span><span class="p-tag p2">P2</span>
           <div class="hero-avatar" style="background: linear-gradient(180deg, #ef4444 32%, #f5c6a5 32% 62%, #2563eb 62%);"></div>
           <div class="hero-name">MARIO</div>
           <div class="hero-style-badge">Overalls</div>
         </div>
 
         <div class="hero-card" data-char="mickey">
+          <span class="p-tag p1">P1</span><span class="p-tag p2">P2</span>
           <div class="hero-avatar" style="background: linear-gradient(180deg, #111827 45%, #ef4444 45% 78%, #facc15 78%);"></div>
           <div class="hero-name">MICKEY</div>
           <div class="hero-style-badge">Toon Town</div>
         </div>
 
         <div class="hero-card" data-char="spongebob">
+          <span class="p-tag p1">P1</span><span class="p-tag p2">P2</span>
           <div class="hero-avatar" style="background: linear-gradient(180deg, #facc15 62%, #ffffff 62% 76%, #78350f 76%); border-radius: 8px;"></div>
           <div class="hero-name">SPONGEBOB</div>
           <div class="hero-style-badge">Bikini Bottom</div>
         </div>
 
         <div class="hero-card" data-char="aang">
+          <span class="p-tag p1">P1</span><span class="p-tag p2">P2</span>
           <div class="hero-avatar" style="background: radial-gradient(circle at 50% 35%, #f5c6a5 40%, #f97316 42%, #facc15 72%);"></div>
           <div class="hero-name">AANG</div>
           <div class="hero-style-badge">Air Nomad</div>
         </div>
 
         <div class="hero-card" data-char="doraemon">
+          <span class="p-tag p1">P1</span><span class="p-tag p2">P2</span>
           <div class="hero-avatar" style="background: radial-gradient(circle at 50% 45%, #ffffff 42%, #0284c7 44%, #ef4444 78%);"></div>
           <div class="hero-name">DORAEMON</div>
           <div class="hero-style-badge">Robot Cat</div>
         </div>
 
         <div class="hero-card" data-char="sulley">
+          <span class="p-tag p1">P1</span><span class="p-tag p2">P2</span>
           <div class="hero-avatar" style="background: radial-gradient(circle at 35% 35%, #a855f7 22%, #38bdf8 25%);"></div>
           <div class="hero-name">SULLEY</div>
           <div class="hero-style-badge">Monsters</div>
@@ -625,151 +765,115 @@
       PoseLandmarker
     } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
 
-    // --- 12-Character Theme & Custom Costume Registry ---
+    // --- 12-Character Theme & Signature Audio Registry ---
     const HERO_CONFIGS = {
       isaac: {
-        name: "ISAAC",
-        item: "OMNI-CORES",
-        isBlocky: false,
-        skyTop: 0x3b1d5e, skyMid: 0xea580c, skyLow: 0xfef08a,
-        fogColor: 0xfdba74,
+        name: "ISAAC", item: "OMNI-CORES", isBlocky: false,
+        skyTop: 0x3b1d5e, skyMid: 0xea580c, skyLow: 0xfef08a, fogColor: 0xfdba74,
         roadBg: "#6e5d4f", cliffColor: 0x5c4033, mossColor: 0x4d7c0f, treeColor: 0x2f5a27,
         propType: "canyonRuins",
         headColor: 0xf5c6a5, hairColor: 0x3b2314, armColor: 0xffffff, gloveColor: 0xf5c6a5,
         legColor: 0x1e3a8a, shoeColor: 0x16a34a, shoeStripe: 0xffffff,
-        rewardColor: 0x4ade80, rewardShape: "emerald"
+        rewardColor: 0x4ade80, rewardShape: "emerald", sfxPitch: 640
       },
       hayyan: {
-        name: "HAYYAN",
-        item: "CRYSTALS",
-        isBlocky: false,
-        skyTop: 0x0c4a6e, skyMid: 0x38bdf8, skyLow: 0xe0f2fe,
-        fogColor: 0xe0f2fe,
+        name: "HAYYAN", item: "CRYSTALS", isBlocky: false,
+        skyTop: 0x0c4a6e, skyMid: 0x38bdf8, skyLow: 0xe0f2fe, fogColor: 0xe0f2fe,
         roadBg: "#1e3a8a", cliffColor: 0x334155, mossColor: 0xe0f2fe, treeColor: 0x7dd3fc,
         propType: "icePillar",
         headColor: 0xf7d1b5, hairColor: 0xfef08a, armColor: 0x38bdf8, gloveColor: 0xe0f2fe,
         legColor: 0x0284c7, shoeColor: 0xe0f2fe, shoeStripe: 0x38bdf8,
-        rewardColor: 0x38bdf8, rewardShape: "emerald"
+        rewardColor: 0x38bdf8, rewardShape: "emerald", sfxPitch: 880
       },
       sofea: {
-        name: "SOFEA",
-        item: "STAR GEMS",
-        isBlocky: false,
-        skyTop: 0x831843, skyMid: 0xf472b6, skyLow: 0xfef08a,
-        fogColor: 0xfce7f3,
+        name: "SOFEA", item: "STAR GEMS", isBlocky: false,
+        skyTop: 0x831843, skyMid: 0xf472b6, skyLow: 0xfef08a, fogColor: 0xfce7f3,
         roadBg: "#4a1d42", cliffColor: 0x701a75, mossColor: 0x4ade80, treeColor: 0x22c55e,
         propType: "canyonRuins",
         headColor: 0xf7d1b5, hairColor: 0x4a2c18, armColor: 0xec4899, gloveColor: 0xfacc15,
         legColor: 0x7e22ce, shoeColor: 0xfacc15, shoeStripe: 0xffffff,
-        rewardColor: 0xfacc15, rewardShape: "star"
+        rewardColor: 0xfacc15, rewardShape: "star", sfxPitch: 980
       },
       steve: {
-        name: "STEVE",
-        item: "EMERALDS",
-        isBlocky: true,
-        skyTop: 0x0284c7, skyMid: 0x38bdf8, skyLow: 0xbae6fd,
-        fogColor: 0xbae6fd,
+        name: "STEVE", item: "EMERALDS", isBlocky: true,
+        skyTop: 0x0284c7, skyMid: 0x38bdf8, skyLow: 0xbae6fd, fogColor: 0xbae6fd,
         roadBg: "#57534e", cliffColor: 0x5c4033, mossColor: 0x22c55e, treeColor: 0x15803d,
         propType: "voxelTree",
         headColor: 0xf5c6a5, hairColor: 0x4a2c18, armColor: 0x00b4d8, gloveColor: 0xf5c6a5,
         legColor: 0x1d4ed8, shoeColor: 0x334155, shoeStripe: 0x64748b,
-        rewardColor: 0x4ade80, rewardShape: "emerald"
+        rewardColor: 0x4ade80, rewardShape: "emerald", sfxPitch: 580
       },
       alex: {
-        name: "ALEX",
-        item: "EMERALDS",
-        isBlocky: true,
-        skyTop: 0x0369a1, skyMid: 0x38bdf8, skyLow: 0xdcfce7,
-        fogColor: 0xdcfce7,
+        name: "ALEX", item: "EMERALDS", isBlocky: true,
+        skyTop: 0x0369a1, skyMid: 0x38bdf8, skyLow: 0xdcfce7, fogColor: 0xdcfce7,
         roadBg: "#574335", cliffColor: 0x574335, mossColor: 0x4d7c0f, treeColor: 0x16a34a,
         propType: "canyonRuins",
         headColor: 0xf7d1b5, hairColor: 0xe85d04, armColor: 0xf7d1b5, gloveColor: 0xf7d1b5,
         legColor: 0x5c4033, shoeColor: 0xd97706, shoeStripe: 0xfef3c7,
-        rewardColor: 0x4ade80, rewardShape: "emerald"
+        rewardColor: 0x4ade80, rewardShape: "emerald", sfxPitch: 620
       },
       sonic: {
-        name: "SONIC",
-        item: "GOLD RINGS",
-        isBlocky: false,
-        skyTop: 0x0284c7, skyMid: 0x0ea5e9, skyLow: 0xbae6fd,
-        fogColor: 0xbae6fd,
+        name: "SONIC", item: "GOLD RINGS", isBlocky: false,
+        skyTop: 0x0284c7, skyMid: 0x0ea5e9, skyLow: 0xbae6fd, fogColor: 0xbae6fd,
         roadBg: "#451a03", cliffColor: 0x78350f, mossColor: 0x22c55e, treeColor: 0x16a34a,
         propType: "canyonRuins",
         headColor: 0x2563eb, hairColor: 0x2563eb, armColor: 0xf5c396, gloveColor: 0xffffff,
         legColor: 0x2563eb, shoeColor: 0xef4444, shoeStripe: 0xffffff,
-        rewardColor: 0xfacc15, rewardShape: "ring"
+        rewardColor: 0xfacc15, rewardShape: "ring", sfxPitch: 1150
       },
       mario: {
-        name: "MARIO",
-        item: "GOLD COINS",
-        isBlocky: false,
-        skyTop: 0x1d4ed8, skyMid: 0x60a5fa, skyLow: 0xdbeafe,
-        fogColor: 0xdbeafe,
+        name: "MARIO", item: "GOLD COINS", isBlocky: false,
+        skyTop: 0x1d4ed8, skyMid: 0x60a5fa, skyLow: 0xdbeafe, fogColor: 0xdbeafe,
         roadBg: "#7f1d1d", cliffColor: 0x7c2d12, mossColor: 0x22c55e, treeColor: 0x16a34a,
         propType: "warpPipe",
         headColor: 0xf5c6a5, hairColor: 0x4a2c18, armColor: 0xdc2626, gloveColor: 0xffffff,
         legColor: 0x1d4ed8, shoeColor: 0x78350f, shoeStripe: 0xd97706,
-        rewardColor: 0xfacc15, rewardShape: "ring"
+        rewardColor: 0xfacc15, rewardShape: "ring", sfxPitch: 988
       },
       mickey: {
-        name: "MICKEY",
-        item: "GOLD STARS",
-        isBlocky: false,
-        skyTop: 0x1e3a8a, skyMid: 0x3b82f6, skyLow: 0xfef08a,
-        fogColor: 0xfef9c3,
+        name: "MICKEY", item: "GOLD STARS", isBlocky: false,
+        skyTop: 0x1e3a8a, skyMid: 0x3b82f6, skyLow: 0xfef08a, fogColor: 0xfef9c3,
         roadBg: "#1f2937", cliffColor: 0x334155, mossColor: 0x4ade80, treeColor: 0x16a34a,
         propType: "canyonRuins",
         headColor: 0x111827, hairColor: 0x111827, armColor: 0x111827, gloveColor: 0xffffff,
         legColor: 0x111827, shoeColor: 0xfacc15, shoeStripe: 0xfef08a,
-        rewardColor: 0xfacc15, rewardShape: "star"
+        rewardColor: 0xfacc15, rewardShape: "star", sfxPitch: 820
       },
       spongebob: {
-        name: "SPONGEBOB",
-        item: "PATTIES",
-        isBlocky: true,
-        skyTop: 0x0369a1, skyMid: 0x06b6d4, skyLow: 0xa5f3fc,
-        fogColor: 0xa5f3fc,
+        name: "SPONGEBOB", item: "PATTIES", isBlocky: true,
+        skyTop: 0x0369a1, skyMid: 0x06b6d4, skyLow: 0xa5f3fc, fogColor: 0xa5f3fc,
         roadBg: "#ca8a04", cliffColor: 0xa16207, mossColor: 0xfde047, treeColor: 0xf43f5e,
         propType: "coral",
         headColor: 0xfacc15, hairColor: 0xfacc15, armColor: 0xfacc15, gloveColor: 0xfacc15,
         legColor: 0xfacc15, shoeColor: 0x111827, shoeStripe: 0xffffff,
-        rewardColor: 0xd97706, rewardShape: "ring"
+        rewardColor: 0xd97706, rewardShape: "ring", sfxPitch: 740
       },
       aang: {
-        name: "AANG",
-        item: "AIR ORBS",
-        isBlocky: false,
-        skyTop: 0xb45309, skyMid: 0xfb923c, skyLow: 0xfef3c7,
-        fogColor: 0xfef3c7,
+        name: "AANG", item: "AIR ORBS", isBlocky: false,
+        skyTop: 0xb45309, skyMid: 0xfb923c, skyLow: 0xfef3c7, fogColor: 0xfef3c7,
         roadBg: "#57534e", cliffColor: 0x57534e, mossColor: 0x65a30d, treeColor: 0x4d7c0f,
         propType: "canyonRuins",
         headColor: 0xf5c6a5, hairColor: 0xf5c6a5, armColor: 0xf97316, gloveColor: 0xf5c6a5,
         legColor: 0xeab308, shoeColor: 0x78350f, shoeStripe: 0xfacc15,
-        rewardColor: 0x38bdf8, rewardShape: "orb"
+        rewardColor: 0x38bdf8, rewardShape: "orb", sfxPitch: 700
       },
       doraemon: {
-        name: "DORAEMON",
-        item: "DORAYAKI",
-        isBlocky: false,
-        skyTop: 0x0284c7, skyMid: 0x38bdf8, skyLow: 0xffffff,
-        fogColor: 0xe0f2fe,
+        name: "DORAEMON", item: "DORAYAKI", isBlocky: false,
+        skyTop: 0x0284c7, skyMid: 0x38bdf8, skyLow: 0xffffff, fogColor: 0xe0f2fe,
         roadBg: "#1e40af", cliffColor: 0x1e3a8a, mossColor: 0x4ade80, treeColor: 0x22c55e,
         propType: "canyonRuins",
         headColor: 0x0284c7, hairColor: 0x0284c7, armColor: 0x0284c7, gloveColor: 0xffffff,
         legColor: 0x0284c7, shoeColor: 0xffffff, shoeStripe: 0x38bdf8,
-        rewardColor: 0xb45309, rewardShape: "ring"
+        rewardColor: 0xb45309, rewardShape: "ring", sfxPitch: 780
       },
       sulley: {
-        name: "SULLEY",
-        item: "CANISTERS",
-        isBlocky: false,
-        skyTop: 0x312e81, skyMid: 0x6366f1, skyLow: 0xe0e7ff,
-        fogColor: 0xe0e7ff,
+        name: "SULLEY", item: "CANISTERS", isBlocky: false,
+        skyTop: 0x312e81, skyMid: 0x6366f1, skyLow: 0xe0e7ff, fogColor: 0xe0e7ff,
         roadBg: "#334155", cliffColor: 0x1e293b, mossColor: 0x4338ca, treeColor: 0x06b6d4,
         propType: "canyonRuins",
         headColor: 0x38bdf8, hairColor: 0xa855f7, armColor: 0x38bdf8, gloveColor: 0x38bdf8,
         legColor: 0x0284c7, shoeColor: 0x0284c7, shoeStripe: 0xa855f7,
-        rewardColor: 0xfacc15, rewardShape: "orb"
+        rewardColor: 0xfacc15, rewardShape: "orb", sfxPitch: 440
       }
     };
 
@@ -781,10 +885,17 @@
     const playBtn = document.getElementById("play-btn");
     const heroCards = document.querySelectorAll(".hero-card");
     const modeOpts = document.querySelectorAll(".mode-opt");
+    const trailBtns = document.querySelectorAll(".trail-btn");
+    const vaultCountEl = document.getElementById("vault-count");
     const actionBanner = document.getElementById("action-banner");
     const rainbowToast = document.getElementById("rainbow-toast");
 
-    const turnBadge = document.getElementById("turn-badge");
+    const edgeAlertLeft = document.getElementById("edge-alert-left");
+    const edgeTextLeft = document.getElementById("edge-text-left");
+    const edgeAlertRight = document.getElementById("edge-alert-right");
+    const edgeTextRight = document.getElementById("edge-text-right");
+
+    const coopBadge = document.getElementById("coop-badge");
     const heartsDisplay = document.getElementById("hearts-display");
     const distDisplay = document.getElementById("dist-display");
     const scoreDisplay = document.getElementById("score-display");
@@ -882,11 +993,12 @@
 
     const sfx = {
       beep: () => playTone(520, "sine", 0.1),
-      jump: () => playTone(290, "triangle", 0.24, 650),
+      jump: (pitch = 290) => playTone(pitch, "triangle", 0.24, pitch * 2.1),
       duck: () => playTone(240, "sine", 0.18, 105),
-      collect: () => {
-        playTone(680, "sine", 0.09);
-        setTimeout(() => playTone(1020, "sine", 0.18), 65);
+      ramp: () => [330, 440, 660, 880].forEach((n, i) => setTimeout(() => playTone(n, "triangle", 0.15), i * 45)),
+      collect: (basePitch = 680) => {
+        playTone(basePitch, "sine", 0.09);
+        setTimeout(() => playTone(basePitch * 1.5, "sine", 0.18), 65);
       },
       powerup: () => [440, 587, 880].forEach((n, i) => setTimeout(() => playTone(n, "triangle", 0.16), i * 65)),
       shieldBreak: () => playTone(380, "sawtooth", 0.25, 160),
@@ -912,7 +1024,7 @@
     scene.fog = new THREE.FogExp2(0xfdba74, 0.009);
 
     const camera = new THREE.PerspectiveCamera(54, window.innerWidth / window.innerHeight, 0.1, 220);
-    camera.position.set(0, 4.7, 9.6);
+    camera.position.set(0, 4.9, 10.0);
     camera.lookAt(0, 1.9, -16);
 
     const composer = new EffectComposer(renderer);
@@ -984,7 +1096,7 @@
     sunLight.shadow.camera.bottom = -d;
     scene.add(sunLight);
 
-    // --- Canvas-Painted Costume Texture Generator (Authentic Character Outfits!) ---
+    // --- Costume Texture Generator ---
     function createCostumeTexture(charKey) {
       const c = document.createElement("canvas");
       c.width = 256;
@@ -992,57 +1104,45 @@
       const g = c.getContext("2d");
 
       if (charKey === "mario") {
-        // Red shirt base + Blue Denim Overalls + Yellow Brass Buttons + Back Straps!
-        g.fillStyle = "#dc2626"; // Red shirt
+        g.fillStyle = "#dc2626";
         g.fillRect(0, 0, 256, 256);
-        g.fillStyle = "#1d4ed8"; // Blue overalls lower & bib
+        g.fillStyle = "#1d4ed8";
         g.fillRect(0, 115, 256, 141);
-        g.fillRect(36, 48, 56, 80);   // Front bib
-        g.fillRect(164, 48, 56, 80);  // Back bib
-        // Shoulder straps
+        g.fillRect(36, 48, 56, 80);
+        g.fillRect(164, 48, 56, 80);
         g.fillRect(42, 0, 16, 60);
         g.fillRect(72, 0, 16, 60);
         g.fillRect(170, 0, 16, 60);
         g.fillRect(200, 0, 16, 60);
-        // Bright Yellow Brass Buttons on front & back straps
         g.fillStyle = "#facc15";
         [50, 80, 178, 208].forEach((bx) => {
-          g.beginPath();
-          g.arc(bx, 62, 7, 0, Math.PI * 2);
-          g.fill();
+          g.beginPath(); g.arc(bx, 62, 7, 0, Math.PI * 2); g.fill();
         });
       } else if (charKey === "isaac") {
-        // Ben 10 White Jacket with Bold Vertical Black Stripe & Green Collar
         g.fillStyle = "#f8fafc";
         g.fillRect(0, 0, 256, 256);
         g.fillStyle = "#0f172a";
-        g.fillRect(54, 0, 20, 256);  // Front black stripe
-        g.fillRect(182, 0, 20, 256); // Back black stripe
+        g.fillRect(54, 0, 20, 256);
+        g.fillRect(182, 0, 20, 256);
         g.fillStyle = "#22c55e";
-        g.fillRect(0, 0, 256, 22);   // Green collar trim
-        g.fillRect(0, 232, 256, 24); // Green hem
+        g.fillRect(0, 0, 256, 22);
+        g.fillRect(0, 232, 256, 24);
       } else if (charKey === "spongebob") {
-        // Porous Yellow Sponge + White Shirt + Red Tie + Brown Square Pants!
         g.fillStyle = "#facc15";
         g.fillRect(0, 0, 256, 256);
-        // Sponge pores
         g.fillStyle = "#ca8a04";
         [[30,35,9],[95,55,7],[160,30,10],[215,75,8],[45,105,6],[190,115,9]].forEach(([px,py,pr]) => {
           g.beginPath(); g.arc(px, py, pr, 0, Math.PI * 2); g.fill();
         });
-        // Crisp White Shirt
         g.fillStyle = "#ffffff";
         g.fillRect(0, 148, 256, 44);
-        // Red Tie on front
         g.fillStyle = "#ef4444";
         g.beginPath(); g.moveTo(64, 150); g.lineTo(74, 184); g.lineTo(64, 194); g.lineTo(54, 184); g.closePath(); g.fill();
-        // Brown Square Pants + Black Belt
         g.fillStyle = "#78350f";
         g.fillRect(0, 192, 256, 64);
         g.fillStyle = "#0f172a";
         g.fillRect(0, 194, 256, 10);
       } else if (charKey === "doraemon") {
-        // Blue Body + White 4D Belly Pocket + Red Collar
         g.fillStyle = "#0284c7";
         g.fillRect(0, 0, 256, 256);
         g.fillStyle = "#ffffff";
@@ -1053,18 +1153,15 @@
         g.fillStyle = "#ef4444";
         g.fillRect(0, 0, 256, 24);
       } else if (charKey === "mickey") {
-        // Black Torso + Iconic Red Shorts with 2 Yellow Buttons
         g.fillStyle = "#111827";
         g.fillRect(0, 0, 256, 256);
         g.fillStyle = "#dc2626";
         g.fillRect(0, 135, 256, 121);
         g.fillStyle = "#facc15";
-        g.beginPath(); g.ellipse(48, 175, 8, 12, 0, 0, Math.PI * 2); g.fill();
-        g.beginPath(); g.ellipse(82, 175, 8, 12, 0, 0, Math.PI * 2); g.fill();
-        g.beginPath(); g.ellipse(176, 175, 8, 12, 0, 0, Math.PI * 2); g.fill();
-        g.beginPath(); g.ellipse(210, 175, 8, 12, 0, 0, Math.PI * 2); g.fill();
+        [48, 82, 176, 210].forEach((bx) => {
+          g.beginPath(); g.ellipse(bx, 175, 8, 12, 0, 0, Math.PI * 2); g.fill();
+        });
       } else if (charKey === "sulley") {
-        // Blue Fur with Painted Purple Monster Spots
         g.fillStyle = "#38bdf8";
         g.fillRect(0, 0, 256, 256);
         g.fillStyle = "#9333ea";
@@ -1072,7 +1169,6 @@
           g.beginPath(); g.arc(sx, sy, sr, 0, Math.PI * 2); g.fill();
         });
       } else if (charKey === "aang") {
-        // Air Nomad Orange Shawl + Yellow Tunic + Maroon Sash
         g.fillStyle = "#facc15";
         g.fillRect(0, 0, 256, 256);
         g.fillStyle = "#ea580c";
@@ -1080,33 +1176,28 @@
         g.fillStyle = "#991b1b";
         g.fillRect(0, 138, 256, 26);
       } else if (charKey === "steve") {
-        // Minecraft Pixel Cyan Shirt & Indigo Jeans
         g.fillStyle = "#00b4d8";
         g.fillRect(0, 0, 256, 175);
         g.fillStyle = "#1e3a8a";
         g.fillRect(0, 175, 256, 81);
       } else if (charKey === "alex") {
-        // Minecraft Light Green Tunic & Brown Belt
         g.fillStyle = "#4ade80";
         g.fillRect(0, 0, 256, 185);
         g.fillStyle = "#78350f";
         g.fillRect(0, 165, 256, 24);
       } else if (charKey === "hayyan") {
-        // Frozen Ice Tunic with Silver Belt & Snowflake Trim
         g.fillStyle = "#0284c7";
         g.fillRect(0, 0, 256, 256);
         g.fillStyle = "#bae6fd";
         g.fillRect(0, 0, 256, 28);
         g.fillRect(0, 145, 256, 20);
       } else if (charKey === "sofea") {
-        // Magenta & Gold Star Explorer Jacket
         g.fillStyle = "#db2777";
         g.fillRect(0, 0, 256, 256);
         g.fillStyle = "#facc15";
         g.fillRect(58, 0, 14, 256);
         g.fillRect(184, 0, 14, 256);
       } else {
-        // Sonic Blue Torso with Tan Belly Oval
         g.fillStyle = "#2563eb";
         g.fillRect(0, 0, 256, 256);
         g.fillStyle = "#fed7aa";
@@ -1118,7 +1209,6 @@
       return tex;
     }
 
-    // --- Procedural Stone Bump Map & 3D Beveled Stone Tiles ---
     function createSculptedStoneMaps(cfg) {
       const c = document.createElement("canvas");
       c.width = 512;
@@ -1195,7 +1285,6 @@
     const TRACK_REPEATS = 20;
     let stoneMaps = createSculptedStoneMaps(HERO_CONFIGS.isaac);
 
-    // Raised 3D Cobblestone Causeway
     const trackGeo = new THREE.BoxGeometry(LANE_WIDTH * 3.2, 0.9, TRACK_LENGTH);
     const trackMat = new THREE.MeshStandardMaterial({
       map: stoneMaps.map,
@@ -1209,7 +1298,6 @@
     trackMesh.receiveShadow = true;
     scene.add(trackMesh);
 
-    // Sunken Forest Canyon Cliffs & Overhanging Mossy Grass Ledges
     const cliffMat = new THREE.MeshStandardMaterial({ color: 0x5c4033, bumpMap: stoneMaps.bumpMap, bumpScale: 0.18, roughness: 0.9 });
     const mossMat = new THREE.MeshStandardMaterial({ color: 0x4d7c0f, roughness: 0.8 });
 
@@ -1230,7 +1318,7 @@
       scene.add(upperBank);
     });
 
-    // --- Rich Surrounding Canyon Environment (Ruins, Overhead Stone Arch Bridges, Boulders, Ferns & Torches) ---
+    // --- Surrounding Canyon Environment ---
     const sceneryGroup = new THREE.Group();
     scene.add(sceneryGroup);
     const treeTrunkMat = new THREE.MeshStandardMaterial({ color: 0x4a2c18 });
@@ -1248,7 +1336,6 @@
     for (let i = 0; i < 26; i++) {
       const zPos = -i * 6.5;
 
-      // Overhead Ancient Canyon Arch Bridge every 9 segments (Spans high above the canyon!)
       if (i % 9 === 4) {
         const overheadArch = new THREE.Group();
         overheadArch.position.set(0, 0, zPos);
@@ -1268,11 +1355,9 @@
         const propUnit = new THREE.Group();
         propUnit.position.set(side * 5.0, 0, zPos);
 
-        // 0: Thick Wooden Guardrail + Glowing Canyon Torch Lantern every 3rd post
         const railGroup = new THREE.Group();
         const post = new THREE.Mesh(new THREE.BoxGeometry(0.42, 1.55, 0.42), woodRailMat);
         post.position.y = 0.78;
-        post.castShadow = true;
         const postCap = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.18, 0.52), woodRailMat);
         postCap.position.y = 1.6;
         const topBeam = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.24, 6.6), woodRailMat);
@@ -1289,7 +1374,6 @@
           railGroup.add(lanternPole, lanternOrb);
         }
 
-        // Sculpted Canyon Boulders & Fern Clusters perched along the Mossy Ledge
         const ledgeDetails = new THREE.Group();
         ledgeDetails.position.set(side * 1.1, 2.35, 1.5);
         const boulder = new THREE.Mesh(new THREE.DodecahedronGeometry(0.65 + (i % 2) * 0.25, 0), boulderMat);
@@ -1300,7 +1384,6 @@
         fern2.position.set(-side * 0.2, 0.38, -1.5);
         ledgeDetails.add(boulder, fern1, fern2);
 
-        // 1: Weathered Stepped Stone Temple Monument Draped in Green Vines
         const ruinPillar = new THREE.Group();
         ruinPillar.position.set(side * 1.85, 2.3, 0);
         const hVar = (i % 2) * 1.5;
@@ -1308,7 +1391,6 @@
         colBase.position.y = 0.38;
         const colShaft = new THREE.Mesh(new THREE.BoxGeometry(1.45, 4.5 + hVar, 1.45), ruinStoneMat);
         colShaft.position.y = 2.6 + hVar * 0.5;
-        colShaft.castShadow = true;
         const colCornice1 = new THREE.Mesh(new THREE.BoxGeometry(1.85, 0.4, 1.85), ruinStoneMat);
         colCornice1.position.y = 5.0 + hVar;
         const colCornice2 = new THREE.Mesh(new THREE.BoxGeometry(2.15, 0.45, 2.15), ruinStoneMat);
@@ -1320,7 +1402,6 @@
         vine2.position.set(0, 3.8 + hVar * 0.4, 0.2);
         ruinPillar.add(colBase, colShaft, colCornice1, colCornice2, vine1, vine2);
 
-        // 2: Mario Green Warp Pipe
         const warpPipe = new THREE.Group();
         warpPipe.position.set(side * 0.5, 0, 0);
         const pipeBody = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.65, 1.8, 16), warpPipeMat);
@@ -1329,11 +1410,9 @@
         pipeRim.position.y = 1.85;
         warpPipe.add(pipeBody, pipeRim);
 
-        // 3: Frozen Ice Crystal Spire
         const icePillar = new THREE.Mesh(new THREE.ConeGeometry(0.85, 3.8 + (i % 2) * 1.2, 6), icePillarMat);
         icePillar.position.set(side * 0.8, 2.1, 0);
 
-        // 4: Bikini Bottom Coral Cluster
         const coralGroup = new THREE.Group();
         coralGroup.position.set(side * 0.6, 0, 0);
         const c1 = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.3, 1.8, 8), coralMat);
@@ -1342,17 +1421,14 @@
         c2.position.set(0.3, 1.4, 0);
         coralGroup.add(c1, c2);
 
-        // 5: 5-Tiered Textured Pine Tree
         const pineTree = new THREE.Group();
         pineTree.position.set(side * (2.7 + (i % 3) * 1.35), 2.3, 0);
         const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.52, 2.4, 10), treeTrunkMat);
         trunk.position.y = 1.2;
         const tier1 = new THREE.Mesh(new THREE.ConeGeometry(2.5, 2.4, 8), treeLeafMat);
         tier1.position.y = 2.6;
-        tier1.castShadow = true;
         const tier2 = new THREE.Mesh(new THREE.ConeGeometry(2.05, 2.2, 8), treeLeafMat);
         tier2.position.y = 3.8;
-        tier2.castShadow = true;
         const tier3 = new THREE.Mesh(new THREE.ConeGeometry(1.6, 2.0, 8), treeLeafMat);
         tier3.position.y = 4.9;
         const tier4 = new THREE.Mesh(new THREE.ConeGeometry(1.15, 1.8, 8), treeLeafMat);
@@ -1361,7 +1437,6 @@
         tier5.position.y = 6.7;
         pineTree.add(trunk, tier1, tier2, tier3, tier4, tier5);
 
-        // 6: Voxel Cube Tree (For Steve)
         const voxelTree = new THREE.Group();
         voxelTree.position.set(side * (2.7 + (i % 3) * 1.35), 2.3, 0);
         const vTrunk = new THREE.Mesh(new THREE.BoxGeometry(0.7, 2.4, 0.7), treeTrunkMat);
@@ -1375,30 +1450,45 @@
       });
     }
 
-    // --- Billowing Dust Cloud & Flame Particle Pool ---
+    // --- Particle Pool (Supports Unlockable Dust, Rainbow, Fire & Star Trails) ---
     const particles = [];
-    const partGeo = new THREE.SphereGeometry(0.32, 10, 10);
-    for (let i = 0; i < 42; i++) {
-      const m = new THREE.Mesh(partGeo, new THREE.MeshBasicMaterial({ color: 0xe7dcc8, transparent: true, opacity: 0.65 }));
+    const partGeo = new THREE.SphereGeometry(0.3, 10, 10);
+    for (let i = 0; i < 64; i++) {
+      const m = new THREE.Mesh(partGeo, new THREE.MeshBasicMaterial({ color: 0xe7dcc8, transparent: true, opacity: 0.7 }));
       m.visible = false;
       scene.add(m);
       particles.push({ mesh: m, life: 0, maxLife: 0.55, vx: 0, vy: 0, vz: 0 });
     }
-    let dustSpawnTimer = 0;
 
-    function spawnParticle(x, y, z, colorHex = 0xe7dcc8, scale = 1.1, vy = 1.2, life = 0.55) {
+    let activeTrail = localStorage.getItem("templeRunnerTrail") || "dust";
+    const RAINBOW_TRAIL_COLORS = [0xef4444, 0xf97316, 0xfacc15, 0x22c55e, 0x3b82f6, 0xa855f7];
+
+    function spawnParticle(x, y, z, colorHex = 0xe7dcc8, scale = 1.0, vy = 1.1, life = 0.52) {
       const slot = particles.find((p) => p.life <= 0);
       if (!slot) return;
       slot.life = life;
       slot.maxLife = life;
       slot.mesh.material.color.setHex(colorHex);
-      slot.mesh.material.opacity = 0.7;
-      slot.mesh.position.set(x + (Math.random() - 0.5) * 0.65, y, z);
+      slot.mesh.material.opacity = 0.78;
+      slot.mesh.position.set(x + (Math.random() - 0.5) * 0.6, y, z);
       slot.mesh.scale.setScalar(scale);
       slot.mesh.visible = true;
-      slot.vx = (Math.random() - 0.5) * 1.8;
-      slot.vy = vy + Math.random() * 0.9;
+      slot.vx = (Math.random() - 0.5) * 1.6;
+      slot.vy = vy + Math.random() * 0.8;
       slot.vz = 3.2;
+    }
+
+    function spawnFootstepTrail(x, y, z, stepIdx) {
+      if (activeTrail === "rainbow") {
+        const col = RAINBOW_TRAIL_COLORS[stepIdx % RAINBOW_TRAIL_COLORS.length];
+        spawnParticle(x, y + 0.1, z, col, 1.05, 0.9, 0.55);
+      } else if (activeTrail === "fire") {
+        spawnParticle(x, y + 0.1, z, Math.random() < 0.5 ? 0xf97316 : 0xfacc15, 1.0, 1.5, 0.45);
+      } else if (activeTrail === "stars") {
+        spawnParticle(x, y + 0.15, z, 0x38bdf8, 0.85, 1.6, 0.55);
+      } else {
+        spawnParticle(x, y, z, 0xe7dcc8, 1.0, 1.0, 0.5);
+      }
     }
 
     // Birds
@@ -1434,234 +1524,376 @@
     rainbowGroup.visible = false;
     scene.add(rainbowGroup);
 
-    // --- Choice 1: Custom Sculpted 3D Hero Rigs + Canvas-Painted Costume Textures ---
-    const heroRoot = new THREE.Group();
-    scene.add(heroRoot);
+    // 500m Flying Boss Sky Drone (Drops Bonus Treasure Orbs)
+    const bossDrone = new THREE.Group();
+    const droneCore = new THREE.Mesh(new THREE.SphereGeometry(1.4, 18, 18), new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.8, roughness: 0.2 }));
+    const droneEye = new THREE.Mesh(new THREE.SphereGeometry(0.55, 12, 12), new THREE.MeshBasicMaterial({ color: 0xef4444 }));
+    droneEye.position.set(0, 0, 1.15);
+    const droneRing = new THREE.Mesh(new THREE.TorusGeometry(2.1, 0.18, 10, 28), new THREE.MeshBasicMaterial({ color: 0xfacc15 }));
+    droneRing.rotation.x = Math.PI / 2;
+    bossDrone.add(droneCore, droneEye, droneRing);
+    bossDrone.position.set(0, 5.2, -32);
+    bossDrone.visible = false;
+    scene.add(bossDrone);
 
+    // --- Reusable Custom Sculpted Hero Rig Factory (Supports Solo 1 Hero OR Co-Op 2 Heroes) ---
     const costumeTexCache = {};
     function getCostumeTexture(charKey) {
-      if (!costumeTexCache[charKey]) {
-        costumeTexCache[charKey] = createCostumeTexture(charKey);
-      }
+      if (!costumeTexCache[charKey]) costumeTexCache[charKey] = createCostumeTexture(charKey);
       return costumeTexCache[charKey];
     }
 
-    const heroBodyMat = new THREE.MeshStandardMaterial({ map: getCostumeTexture("isaac"), roughness: 0.42 });
-    const heroHeadMat = new THREE.MeshStandardMaterial({ color: 0xf5c6a5, roughness: 0.45 });
-    const heroHairMat = new THREE.MeshStandardMaterial({ color: 0x4a2c18, roughness: 0.65 });
-    const heroArmMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.45 });
-    const gloveMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.35 });
-    const heroLegMat = new THREE.MeshStandardMaterial({ color: 0x1d4ed8, roughness: 0.48 });
-    const heroShoeMat = new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.35 });
-    const shoeStripeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.35 });
-    const sonicBallMat = new THREE.MeshStandardMaterial({ color: 0x2563eb, emissive: 0x1d4ed8, emissiveIntensity: 0.8 });
+    function createHeroRig(ringColorHex) {
+      const root = new THREE.Group();
+      scene.add(root);
 
-    // Articulated Legs with Sock Cuffs & Detailed Sneakers/Boots
-    const leftLegGroup = new THREE.Group();
-    leftLegGroup.position.set(-0.28, 0.92, 0);
-    const leftLegMesh = new THREE.Mesh(new THREE.CapsuleGeometry(0.19, 0.48, 8, 12), heroLegMat);
-    leftLegMesh.position.y = -0.34;
-    const leftCuff = new THREE.Mesh(new THREE.CylinderGeometry(0.21, 0.21, 0.14, 12), shoeStripeMat);
-    leftCuff.position.y = -0.58;
-    const leftShoe = new THREE.Mesh(new THREE.SphereGeometry(0.28, 12, 12), heroShoeMat);
-    leftShoe.scale.set(1.06, 0.72, 1.52);
-    leftShoe.position.set(0, -0.73, -0.09);
-    const leftShoeStrap = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.12, 0.22), shoeStripeMat);
-    leftShoeStrap.position.set(0, -0.68, -0.08);
-    leftLegGroup.add(leftLegMesh, leftCuff, leftShoe, leftShoeStrap);
+      const bodyMat = new THREE.MeshStandardMaterial({ map: getCostumeTexture("isaac"), roughness: 0.42 });
+      const headMat = new THREE.MeshStandardMaterial({ color: 0xf5c6a5, roughness: 0.45 });
+      const hairMat = new THREE.MeshStandardMaterial({ color: 0x4a2c18, roughness: 0.65 });
+      const armMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.45 });
+      const gloveMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.35 });
+      const legMat = new THREE.MeshStandardMaterial({ color: 0x1d4ed8, roughness: 0.48 });
+      const shoeMat = new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.35 });
+      const stripeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.35 });
+      const sonicBallMat = new THREE.MeshStandardMaterial({ color: 0x2563eb, emissive: 0x1d4ed8, emissiveIntensity: 0.8 });
 
-    const rightLegGroup = new THREE.Group();
-    rightLegGroup.position.set(0.28, 0.92, 0);
-    const rightLegMesh = new THREE.Mesh(new THREE.CapsuleGeometry(0.19, 0.48, 8, 12), heroLegMat);
-    rightLegMesh.position.y = -0.34;
-    const rightCuff = new THREE.Mesh(new THREE.CylinderGeometry(0.21, 0.21, 0.14, 12), shoeStripeMat);
-    rightCuff.position.y = -0.58;
-    const rightShoe = new THREE.Mesh(new THREE.SphereGeometry(0.28, 12, 12), heroShoeMat);
-    rightShoe.scale.set(1.06, 0.72, 1.52);
-    rightShoe.position.set(0, -0.73, -0.09);
-    const rightShoeStrap = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.12, 0.22), shoeStripeMat);
-    rightShoeStrap.position.set(0, -0.68, -0.08);
-    rightLegGroup.add(rightLegMesh, rightCuff, rightShoe, rightShoeStrap);
+      const groundRing = new THREE.Mesh(
+        new THREE.RingGeometry(0.75, 0.98, 24),
+        new THREE.MeshBasicMaterial({ color: ringColorHex, side: THREE.DoubleSide, transparent: true, opacity: 0.85 })
+      );
+      groundRing.rotation.x = -Math.PI / 2;
+      groundRing.position.y = 0.04;
+      root.add(groundRing);
 
-    // Custom Textured Torso (Rotated so back details face camera cleanly!)
-    const torsoMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.46, 0.5, 1.05, 18), heroBodyMat);
-    torsoMesh.position.set(0, 1.48, 0);
-    torsoMesh.rotation.y = Math.PI * 0.5;
-    torsoMesh.castShadow = true;
+      const leftLegGroup = new THREE.Group();
+      leftLegGroup.position.set(-0.28, 0.92, 0);
+      const leftLegMesh = new THREE.Mesh(new THREE.CapsuleGeometry(0.19, 0.48, 8, 12), legMat);
+      leftLegMesh.position.y = -0.34;
+      const leftCuff = new THREE.Mesh(new THREE.CylinderGeometry(0.21, 0.21, 0.14, 12), stripeMat);
+      leftCuff.position.y = -0.58;
+      const leftShoe = new THREE.Mesh(new THREE.SphereGeometry(0.28, 12, 12), shoeMat);
+      leftShoe.scale.set(1.06, 0.72, 1.52);
+      leftShoe.position.set(0, -0.73, -0.09);
+      const leftShoeStrap = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.12, 0.22), stripeMat);
+      leftShoeStrap.position.set(0, -0.68, -0.08);
+      leftLegGroup.add(leftLegMesh, leftCuff, leftShoe, leftShoeStrap);
 
-    // Voxel Box Torso & Head (For Steve, Alex, SpongeBob)
-    const voxelTorso = new THREE.Mesh(new THREE.BoxGeometry(0.96, 1.08, 0.58), heroBodyMat);
-    voxelTorso.position.set(0, 1.5, 0);
-    voxelTorso.visible = false;
+      const rightLegGroup = new THREE.Group();
+      rightLegGroup.position.set(0.28, 0.92, 0);
+      const rightLegMesh = new THREE.Mesh(new THREE.CapsuleGeometry(0.19, 0.48, 8, 12), legMat);
+      rightLegMesh.position.y = -0.34;
+      const rightCuff = new THREE.Mesh(new THREE.CylinderGeometry(0.21, 0.21, 0.14, 12), stripeMat);
+      rightCuff.position.y = -0.58;
+      const rightShoe = new THREE.Mesh(new THREE.SphereGeometry(0.28, 12, 12), shoeMat);
+      rightShoe.scale.set(1.06, 0.72, 1.52);
+      rightShoe.position.set(0, -0.73, -0.09);
+      const rightShoeStrap = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.12, 0.22), stripeMat);
+      rightShoeStrap.position.set(0, -0.68, -0.08);
+      rightLegGroup.add(rightLegMesh, rightCuff, rightShoe, rightShoeStrap);
 
-    const voxelHead = new THREE.Mesh(new THREE.BoxGeometry(0.96, 0.96, 0.96), heroHeadMat);
-    voxelHead.position.set(0, 2.55, 0);
-    voxelHead.visible = false;
+      const torsoMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.46, 0.5, 1.05, 18), bodyMat);
+      torsoMesh.position.set(0, 1.48, 0);
+      torsoMesh.rotation.y = Math.PI * 0.5;
+      torsoMesh.castShadow = true;
 
-    // Articulated Arms + Gloves
-    const leftArmGroup = new THREE.Group();
-    leftArmGroup.position.set(-0.65, 1.84, 0);
-    const leftArmMesh = new THREE.Mesh(new THREE.CapsuleGeometry(0.15, 0.46, 8, 12), heroArmMat);
-    leftArmMesh.position.y = -0.3;
-    const leftGlove = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10, 10), gloveMat);
-    leftGlove.position.y = -0.62;
-    leftArmGroup.add(leftArmMesh, leftGlove);
+      const voxelTorso = new THREE.Mesh(new THREE.BoxGeometry(0.96, 1.08, 0.58), bodyMat);
+      voxelTorso.position.set(0, 1.5, 0);
+      voxelTorso.visible = false;
 
-    const rightArmGroup = new THREE.Group();
-    rightArmGroup.position.set(0.65, 1.84, 0);
-    const rightArmMesh = new THREE.Mesh(new THREE.CapsuleGeometry(0.15, 0.46, 8, 12), heroArmMat);
-    rightArmMesh.position.y = -0.3;
-    const rightGlove = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10, 10), gloveMat);
-    rightGlove.position.y = -0.62;
-    rightArmGroup.add(rightArmMesh, rightGlove);
+      const voxelHead = new THREE.Mesh(new THREE.BoxGeometry(0.96, 0.96, 0.96), headMat);
+      voxelHead.position.set(0, 2.55, 0);
+      voxelHead.visible = false;
 
-    // Sculpted Head & Hair
-    const headGroup = new THREE.Group();
-    headGroup.position.set(0, 2.55, 0);
-    const headSphere = new THREE.Mesh(new THREE.SphereGeometry(0.58, 20, 20), heroHeadMat);
-    const hairDome = new THREE.Mesh(
-      new THREE.SphereGeometry(0.61, 18, 18, 0, Math.PI * 2, 0, Math.PI * 0.56),
-      heroHairMat
-    );
-    hairDome.rotation.x = 0.28;
-    headGroup.add(headSphere, hairDome);
+      const leftArmGroup = new THREE.Group();
+      leftArmGroup.position.set(-0.65, 1.84, 0);
+      const leftArmMesh = new THREE.Mesh(new THREE.CapsuleGeometry(0.15, 0.46, 8, 12), armMat);
+      leftArmMesh.position.y = -0.3;
+      const leftGlove = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10, 10), gloveMat);
+      leftGlove.position.y = -0.62;
+      leftArmGroup.add(leftArmMesh, leftGlove);
 
-    // --- Custom 3D Sculpted Signature Parts per Hero ---
-    const accGroup = new THREE.Group();
-    heroRoot.add(accGroup);
+      const rightArmGroup = new THREE.Group();
+      rightArmGroup.position.set(0.65, 1.84, 0);
+      const rightArmMesh = new THREE.Mesh(new THREE.CapsuleGeometry(0.15, 0.46, 8, 12), armMat);
+      rightArmMesh.position.y = -0.3;
+      const rightGlove = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10, 10), gloveMat);
+      rightGlove.position.y = -0.62;
+      rightArmGroup.add(rightArmMesh, rightGlove);
 
-    // 1. Mario's Sculpted Red Cap with 3D Front Brim & White Circle Emblem
-    const marioCapGroup = new THREE.Group();
-    const capCrown = new THREE.Mesh(
-      new THREE.SphereGeometry(0.63, 18, 18, 0, Math.PI * 2, 0, Math.PI * 0.52),
-      new THREE.MeshStandardMaterial({ color: 0xdc2626 })
-    );
-    capCrown.position.set(0, 2.62, 0);
-    const capBrim = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.58, 0.62, 0.09, 18, 1, false, Math.PI * 0.65, Math.PI * 0.7),
-      new THREE.MeshStandardMaterial({ color: 0xb91c1c })
-    );
-    capBrim.position.set(0, 2.66, -0.18);
-    marioCapGroup.add(capCrown, capBrim);
+      const headGroup = new THREE.Group();
+      headGroup.position.set(0, 2.55, 0);
+      const headSphere = new THREE.Mesh(new THREE.SphereGeometry(0.58, 20, 20), headMat);
+      const hairDome = new THREE.Mesh(
+        new THREE.SphereGeometry(0.61, 18, 18, 0, Math.PI * 2, 0, Math.PI * 0.56),
+        hairMat
+      );
+      hairDome.rotation.x = 0.28;
+      headGroup.add(headSphere, hairDome);
 
-    // 2. Sonic's Multi-Layered Swept-Back 3D Quills (Head + Spine Quills!)
-    const sonicQuillsGroup = new THREE.Group();
-    const qMat = new THREE.MeshStandardMaterial({ color: 0x2563eb, roughness: 0.35 });
-    [
-      { x: 0, y: 2.82, z: 0.56, rx: 0.95, ry: 0, s: 1.15 },
-      { x: -0.26, y: 2.66, z: 0.52, rx: 1.05, ry: -0.25, s: 1.0 },
-      { x: 0.26, y: 2.66, z: 0.52, rx: 1.05, ry: 0.25, s: 1.0 },
-      { x: 0, y: 2.42, z: 0.54, rx: 1.15, ry: 0, s: 1.05 },
-      { x: 0, y: 1.72, z: 0.48, rx: 1.25, ry: 0, s: 0.85 } // Back spine quill!
-    ].forEach((q) => {
-      const cone = new THREE.Mesh(new THREE.ConeGeometry(0.28 * q.s, 1.05 * q.s, 10), qMat);
-      cone.position.set(q.x, q.y, q.z);
-      cone.rotation.set(q.rx, q.ry, 0);
-      sonicQuillsGroup.add(cone);
+      const accGroup = new THREE.Group();
+      root.add(accGroup);
+
+      const marioCapGroup = new THREE.Group();
+      const capCrown = new THREE.Mesh(new THREE.SphereGeometry(0.63, 18, 18, 0, Math.PI * 2, 0, Math.PI * 0.52), new THREE.MeshStandardMaterial({ color: 0xdc2626 }));
+      capCrown.position.set(0, 2.62, 0);
+      const capBrim = new THREE.Mesh(new THREE.CylinderGeometry(0.58, 0.62, 0.09, 18, 1, false, Math.PI * 0.65, Math.PI * 0.7), new THREE.MeshStandardMaterial({ color: 0xb91c1c }));
+      capBrim.position.set(0, 2.66, -0.18);
+      marioCapGroup.add(capCrown, capBrim);
+
+      const sonicQuillsGroup = new THREE.Group();
+      const qMat = new THREE.MeshStandardMaterial({ color: 0x2563eb, roughness: 0.35 });
+      [
+        { x: 0, y: 2.82, z: 0.56, rx: 0.95, ry: 0, s: 1.15 },
+        { x: -0.26, y: 2.66, z: 0.52, rx: 1.05, ry: -0.25, s: 1.0 },
+        { x: 0.26, y: 2.66, z: 0.52, rx: 1.05, ry: 0.25, s: 1.0 },
+        { x: 0, y: 2.42, z: 0.54, rx: 1.15, ry: 0, s: 1.05 },
+        { x: 0, y: 1.72, z: 0.48, rx: 1.25, ry: 0, s: 0.85 }
+      ].forEach((q) => {
+        const cone = new THREE.Mesh(new THREE.ConeGeometry(0.28 * q.s, 1.05 * q.s, 10), qMat);
+        cone.position.set(q.x, q.y, q.z);
+        cone.rotation.set(q.rx, q.ry, 0);
+        sonicQuillsGroup.add(cone);
+      });
+
+      const isaacGear = new THREE.Group();
+      const omnitrixBand = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.19, 0.18, 12), new THREE.MeshStandardMaterial({ color: 0x0f172a }));
+      omnitrixBand.position.set(-0.65, 1.28, 0);
+      const omnitrixCore = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.2, 12), new THREE.MeshBasicMaterial({ color: 0x4ade80 }));
+      omnitrixCore.position.set(-0.65, 1.28, 0);
+      isaacGear.add(omnitrixBand, omnitrixCore);
+
+      const alexHair = new THREE.Group();
+      const alexTop = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.35, 1.0), new THREE.MeshStandardMaterial({ color: 0xe85d04 }));
+      alexTop.position.set(0, 2.95, 0);
+      const alexPonytail = new THREE.Mesh(new THREE.BoxGeometry(0.32, 1.15, 0.26), new THREE.MeshStandardMaterial({ color: 0xe85d04 }));
+      alexPonytail.position.set(0.22, 2.25, 0.52);
+      alexHair.add(alexTop, alexPonytail);
+
+      const steveHair = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.32, 1.0), new THREE.MeshStandardMaterial({ color: 0x4a2c18 }));
+      steveHair.position.set(0, 2.95, 0);
+
+      const mickeyGear = new THREE.Group();
+      const earL = new THREE.Mesh(new THREE.SphereGeometry(0.32, 14, 14), new THREE.MeshStandardMaterial({ color: 0x111827 }));
+      earL.position.set(-0.52, 3.15, 0);
+      const earR = new THREE.Mesh(new THREE.SphereGeometry(0.32, 14, 14), new THREE.MeshStandardMaterial({ color: 0x111827 }));
+      earR.position.set(0.52, 3.15, 0);
+      const mickeyTail = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.85, 8), new THREE.MeshStandardMaterial({ color: 0x111827 }));
+      mickeyTail.position.set(0, 1.25, 0.65);
+      mickeyTail.rotation.x = 0.85;
+      mickeyGear.add(earL, earR, mickeyTail);
+
+      const doraGear = new THREE.Group();
+      const collar = new THREE.Mesh(new THREE.TorusGeometry(0.46, 0.08, 10, 20), new THREE.MeshStandardMaterial({ color: 0xef4444 }));
+      collar.rotation.x = Math.PI / 2;
+      collar.position.y = 2.02;
+      const bell = new THREE.Mesh(new THREE.SphereGeometry(0.15, 12, 12), new THREE.MeshStandardMaterial({ color: 0xfacc15 }));
+      bell.position.set(0, 1.98, -0.46);
+      const doraTail = new THREE.Mesh(new THREE.SphereGeometry(0.18, 12, 12), new THREE.MeshStandardMaterial({ color: 0xef4444 }));
+      doraTail.position.set(0, 1.15, 0.56);
+      doraGear.add(collar, bell, doraTail);
+
+      const sulleyGear = new THREE.Group();
+      const hornL = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.45, 10), new THREE.MeshStandardMaterial({ color: 0xfef3c7 }));
+      hornL.position.set(-0.42, 3.15, 0);
+      hornL.rotation.z = 0.45;
+      const hornR = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.45, 10), new THREE.MeshStandardMaterial({ color: 0xfef3c7 }));
+      hornR.position.set(0.42, 3.15, 0);
+      hornR.rotation.z = -0.45;
+      const sulleyTail = new THREE.Mesh(new THREE.ConeGeometry(0.28, 1.35, 10), new THREE.MeshStandardMaterial({ color: 0x38bdf8 }));
+      sulleyTail.position.set(0, 1.05, 0.72);
+      sulleyTail.rotation.x = 1.15;
+      sulleyGear.add(hornL, hornR, sulleyTail);
+
+      const iceCape = new THREE.Mesh(new THREE.BoxGeometry(0.86, 1.25, 0.08), new THREE.MeshStandardMaterial({ color: 0xbae6fd, transparent: true, opacity: 0.8 }));
+      iceCape.position.set(0, 1.48, 0.5);
+      iceCape.rotation.x = 0.22;
+
+      const backpack = new THREE.Mesh(new THREE.BoxGeometry(0.64, 0.72, 0.34), new THREE.MeshStandardMaterial({ color: 0x7e22ce }));
+      backpack.position.set(0, 1.55, 0.5);
+
+      const airArrow = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.12, 0.65), new THREE.MeshBasicMaterial({ color: 0x38bdf8 }));
+      airArrow.position.set(0, 3.12, -0.1);
+
+      accGroup.add(marioCapGroup, sonicQuillsGroup, isaacGear, alexHair, steveHair, mickeyGear, doraGear, sulleyGear, iceCape, backpack, airArrow);
+
+      const spinBall = new THREE.Mesh(new THREE.SphereGeometry(0.88, 22, 22), sonicBallMat);
+      spinBall.position.set(0, 0.9, 0);
+      spinBall.visible = false;
+
+      const shieldBubble = new THREE.Mesh(
+        new THREE.SphereGeometry(1.75, 24, 24),
+        new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.42 })
+      );
+      shieldBubble.position.set(0, 1.6, 0);
+      shieldBubble.visible = false;
+
+      root.add(leftLegGroup, rightLegGroup, torsoMesh, voxelTorso, leftArmGroup, rightArmGroup, headGroup, voxelHead, spinBall, shieldBubble);
+
+      const rig = {
+        root,
+        charKey: "isaac",
+        lane: 0,
+        jumpY: 0,
+        jumpVelY: 0,
+        onSkyBridge: false,
+        skyBridgeTimer: 0,
+        isDucking: false,
+        duckTimer: 0,
+        landingSquash: 0,
+        stepCounter: 0,
+        dustTimer: 0,
+        shieldBubble,
+        setCharacter(key) {
+          rig.charKey = key;
+          const cfg = HERO_CONFIGS[key] || HERO_CONFIGS.isaac;
+          bodyMat.map = getCostumeTexture(key);
+          bodyMat.needsUpdate = true;
+          headMat.color.setHex(cfg.headColor);
+          hairMat.color.setHex(cfg.hairColor);
+          armMat.color.setHex(cfg.armColor);
+          gloveMat.color.setHex(cfg.gloveColor);
+          legMat.color.setHex(cfg.legColor);
+          shoeMat.color.setHex(cfg.shoeColor);
+          stripeMat.color.setHex(cfg.shoeStripe);
+
+          torsoMesh.visible = !cfg.isBlocky;
+          voxelTorso.visible = cfg.isBlocky;
+          headGroup.visible = !cfg.isBlocky;
+          voxelHead.visible = cfg.isBlocky;
+          hairDome.visible = !cfg.isBlocky && !["sonic", "mario", "mickey", "aang", "doraemon", "sulley"].includes(key);
+
+          marioCapGroup.visible = key === "mario";
+          sonicQuillsGroup.visible = key === "sonic";
+          isaacGear.visible = key === "isaac";
+          alexHair.visible = key === "alex";
+          steveHair.visible = key === "steve";
+          mickeyGear.visible = key === "mickey";
+          doraGear.visible = key === "doraemon";
+          sulleyGear.visible = key === "sulley";
+          iceCape.visible = key === "hayyan";
+          backpack.visible = key === "sofea";
+          airArrow.visible = key === "aang";
+        },
+        updateVisuals(dt, now, invuln, shieldOn) {
+          const cfg = HERO_CONFIGS[rig.charKey] || HERO_CONFIGS.isaac;
+          const targetX = rig.lane * LANE_WIDTH;
+          const dxLane = targetX - root.position.x;
+          root.position.x += dxLane * 11 * dt;
+          root.rotation.z = THREE.MathUtils.clamp(-dxLane * 0.14, -0.28, 0.28);
+
+          const baseGroundY = rig.onSkyBridge ? 3.4 : 0;
+          if (rig.jumpY > baseGroundY || rig.jumpVelY !== 0) {
+            rig.jumpY += rig.jumpVelY * dt;
+            rig.jumpVelY += -26 * dt;
+            if (rig.jumpY <= baseGroundY) {
+              rig.jumpY = baseGroundY;
+              rig.jumpVelY = 0;
+              rig.landingSquash = 0.22;
+              spawnFootstepTrail(root.position.x, baseGroundY + 0.15, 0.35, rig.stepCounter++);
+            }
+          } else {
+            rig.jumpY = baseGroundY;
+          }
+          root.position.y = rig.jumpY;
+
+          if (rig.landingSquash > 0) rig.landingSquash = Math.max(0, rig.landingSquash - dt * 1.4);
+
+          const isAirborne = rig.jumpY > baseGroundY + 0.15;
+          const isSonicBall = rig.charKey === "sonic" && (isAirborne || rig.isDucking);
+
+          leftLegGroup.visible = rightLegGroup.visible = leftArmGroup.visible = rightArmGroup.visible = accGroup.visible = !isSonicBall;
+          torsoMesh.visible = !cfg.isBlocky && !isSonicBall;
+          voxelTorso.visible = cfg.isBlocky && !isSonicBall;
+          headGroup.visible = !cfg.isBlocky && !isSonicBall;
+          voxelHead.visible = cfg.isBlocky && !isSonicBall;
+          spinBall.visible = isSonicBall;
+          if (isSonicBall) spinBall.rotation.x -= 20 * dt;
+
+          const runCycle = Math.sin(now * 0.014);
+          leftLegGroup.rotation.x = isAirborne ? 0.55 : runCycle * 0.75;
+          rightLegGroup.rotation.x = isAirborne ? -0.45 : -runCycle * 0.75;
+          leftArmGroup.rotation.x = isAirborne ? -0.7 : -runCycle * 0.65;
+          rightArmGroup.rotation.x = isAirborne ? -0.7 : runCycle * 0.65;
+
+          const targetScaleY = rig.isDucking && !isSonicBall ? 0.52 : 1.0 - rig.landingSquash;
+          const targetScaleXZ = rig.isDucking && !isSonicBall ? 1.18 : 1.0 + rig.landingSquash * 0.7;
+          root.scale.y += (targetScaleY - root.scale.y) * 16 * dt;
+          root.scale.x += (targetScaleXZ - root.scale.x) * 16 * dt;
+          root.scale.z += (targetScaleXZ - root.scale.z) * 16 * dt;
+
+          shieldBubble.visible = shieldOn;
+          root.visible = invuln <= 0 || Math.floor(now / 80) % 2 === 0;
+        }
+      };
+
+      return rig;
+    }
+
+    const p1Rig = createHeroRig(0x4ade80);
+    const p2Rig = createHeroRig(0x38bdf8);
+    p2Rig.root.visible = false;
+
+    // --- Mode, Vault Trails & Dual Hero Selection ---
+    let gameMode = "solo"; // "solo" or "coop"
+    let p1Char = "isaac";
+    let p2Char = "hayyan";
+    let nextCoopSlot = 1;
+
+    let totalVault = parseInt(localStorage.getItem("templeRunnerVault") || "0", 10);
+    vaultCountEl.textContent = totalVault;
+    bestDisplay.textContent = totalVault;
+
+    function refreshTrailButtons() {
+      trailBtns.forEach((btn) => {
+        const cost = parseInt(btn.dataset.cost, 10);
+        const t = btn.dataset.trail;
+        btn.classList.toggle("active", t === activeTrail);
+        if (cost > 0 && totalVault < cost) {
+          btn.style.opacity = "0.55";
+        } else {
+          btn.style.opacity = "1";
+        }
+      });
+    }
+    refreshTrailButtons();
+
+    trailBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        unlockAudio();
+        const cost = parseInt(btn.dataset.cost, 10);
+        if (totalVault < cost) {
+          sfx.hit();
+          return;
+        }
+        sfx.collect();
+        activeTrail = btn.dataset.trail;
+        localStorage.setItem("templeRunnerTrail", activeTrail);
+        refreshTrailButtons();
+      });
     });
 
-    // 3. Isaac (Ben 10) Glowing Omnitrix Wrist Watch + Spiky Hair Tuft
-    const isaacGear = new THREE.Group();
-    const omnitrixBand = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.19, 0.18, 12), new THREE.MeshStandardMaterial({ color: 0x0f172a }));
-    omnitrixBand.position.set(-0.65, 1.28, 0);
-    const omnitrixCore = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.2, 12), new THREE.MeshBasicMaterial({ color: 0x4ade80 }));
-    omnitrixCore.position.set(-0.65, 1.28, 0);
-    isaacGear.add(omnitrixBand, omnitrixCore);
+    function refreshHeroSelectionUI() {
+      heroCards.forEach((c) => {
+        const key = c.dataset.char;
+        c.classList.toggle("selected-p1", key === p1Char);
+        c.classList.toggle("selected-p2", gameMode === "coop" && key === p2Char);
+      });
+    }
 
-    // 4. Alex's Long Orange Ponytail Draping Down Her Back
-    const alexHair = new THREE.Group();
-    const alexTop = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.35, 1.0), new THREE.MeshStandardMaterial({ color: 0xe85d04 }));
-    alexTop.position.set(0, 2.95, 0);
-    const alexPonytail = new THREE.Mesh(new THREE.BoxGeometry(0.32, 1.15, 0.26), new THREE.MeshStandardMaterial({ color: 0xe85d04 }));
-    alexPonytail.position.set(0.22, 2.25, 0.52);
-    alexHair.add(alexTop, alexPonytail);
+    modeOpts.forEach((opt) => {
+      opt.addEventListener("click", () => {
+        unlockAudio();
+        sfx.beep();
+        modeOpts.forEach((o) => o.classList.remove("active"));
+        opt.classList.add("active");
+        gameMode = opt.dataset.mode;
+        nextCoopSlot = 1;
+        refreshHeroSelectionUI();
+      });
+    });
 
-    // 5. Steve's Voxel Hair Cap
-    const steveHair = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.32, 1.0), new THREE.MeshStandardMaterial({ color: 0x4a2c18 }));
-    steveHair.position.set(0, 2.95, 0);
-
-    // 6. Mickey's Round Ears + Bouncing Tail
-    const mickeyGear = new THREE.Group();
-    const earL = new THREE.Mesh(new THREE.SphereGeometry(0.32, 14, 14), new THREE.MeshStandardMaterial({ color: 0x111827 }));
-    earL.position.set(-0.52, 3.15, 0);
-    const earR = new THREE.Mesh(new THREE.SphereGeometry(0.32, 14, 14), new THREE.MeshStandardMaterial({ color: 0x111827 }));
-    earR.position.set(0.52, 3.15, 0);
-    const mickeyTail = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.85, 8), new THREE.MeshStandardMaterial({ color: 0x111827 }));
-    mickeyTail.position.set(0, 1.25, 0.65);
-    mickeyTail.rotation.x = 0.85;
-    mickeyGear.add(earL, earR, mickeyTail);
-
-    // 7. Doraemon's Golden Bell, Red Collar & Bouncing Red Tail
-    const doraGear = new THREE.Group();
-    const collar = new THREE.Mesh(new THREE.TorusGeometry(0.46, 0.08, 10, 20), new THREE.MeshStandardMaterial({ color: 0xef4444 }));
-    collar.rotation.x = Math.PI / 2;
-    collar.position.y = 2.02;
-    const bell = new THREE.Mesh(new THREE.SphereGeometry(0.15, 12, 12), new THREE.MeshStandardMaterial({ color: 0xfacc15 }));
-    bell.position.set(0, 1.98, -0.46);
-    const doraTail = new THREE.Mesh(new THREE.SphereGeometry(0.18, 12, 12), new THREE.MeshStandardMaterial({ color: 0xef4444 }));
-    doraTail.position.set(0, 1.15, 0.56);
-    doraGear.add(collar, bell, doraTail);
-
-    // 8. Sulley's Curved Horns & Thick Spiked Monster Tail
-    const sulleyGear = new THREE.Group();
-    const hornL = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.45, 10), new THREE.MeshStandardMaterial({ color: 0xfef3c7 }));
-    hornL.position.set(-0.42, 3.15, 0);
-    hornL.rotation.z = 0.45;
-    const hornR = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.45, 10), new THREE.MeshStandardMaterial({ color: 0xfef3c7 }));
-    hornR.position.set(0.42, 3.15, 0);
-    hornR.rotation.z = -0.45;
-    const sulleyTail = new THREE.Mesh(new THREE.ConeGeometry(0.28, 1.35, 10), new THREE.MeshStandardMaterial({ color: 0x38bdf8 }));
-    sulleyTail.position.set(0, 1.05, 0.72);
-    sulleyTail.rotation.x = 1.15;
-    sulleyGear.add(hornL, hornR, sulleyTail);
-
-    // 9. Hayyan's Translucent Frost Cape
-    const iceCape = new THREE.Mesh(
-      new THREE.BoxGeometry(0.86, 1.25, 0.08),
-      new THREE.MeshStandardMaterial({ color: 0xbae6fd, transparent: true, opacity: 0.8 })
-    );
-    iceCape.position.set(0, 1.48, 0.5);
-    iceCape.rotation.x = 0.22;
-
-    // 10. Sofea's Star Explorer Backpack
-    const backpack = new THREE.Mesh(
-      new THREE.BoxGeometry(0.64, 0.72, 0.34),
-      new THREE.MeshStandardMaterial({ color: 0x7e22ce })
-    );
-    backpack.position.set(0, 1.55, 0.5);
-
-    // 11. Aang's Glowing Air Nomad Arrow
-    const airArrow = new THREE.Mesh(
-      new THREE.BoxGeometry(0.18, 0.12, 0.65),
-      new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
-    );
-    airArrow.position.set(0, 3.12, -0.1);
-
-    accGroup.add(
-      marioCapGroup, sonicQuillsGroup, isaacGear, alexHair, steveHair,
-      mickeyGear, doraGear, sulleyGear, iceCape, backpack, airArrow
-    );
-
-    const spinBall = new THREE.Mesh(new THREE.SphereGeometry(0.88, 22, 22), sonicBallMat);
-    spinBall.position.set(0, 0.9, 0);
-    spinBall.visible = false;
-
-    const shieldBubble = new THREE.Mesh(
-      new THREE.SphereGeometry(1.75, 24, 24),
-      new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.45 })
-    );
-    shieldBubble.position.set(0, 1.6, 0);
-    shieldBubble.visible = false;
-
-    heroRoot.add(leftLegGroup, rightLegGroup, torsoMesh, voxelTorso, leftArmGroup, rightArmGroup, headGroup, voxelHead, spinBall, shieldBubble);
-
-    // --- Switch Hero & Entire 3D World Style ---
-    let selectedChar = "isaac";
-
-    function applyHeroAndArtStyle(charKey) {
-      selectedChar = charKey;
+    function applyWorldTheme(charKey) {
       const cfg = HERO_CONFIGS[charKey] || HERO_CONFIGS.isaac;
-
       stoneMaps = createSculptedStoneMaps(cfg);
       trackMat.map = stoneMaps.map;
       trackMat.bumpMap = stoneMaps.bumpMap;
@@ -1677,7 +1909,7 @@
       treeLeafMat.color.setHex(cfg.treeColor);
 
       sceneryGroup.children.forEach((propUnit, idx) => {
-        if (propUnit.children.length < 8) return; // Skip overhead arches
+        if (propUnit.children.length < 8) return;
         const [railGroup, ledgeDetails, ruinPillar, warpPipe, icePillar, coralGroup, pineTree, voxelTree] = propUnit.children;
         railGroup.visible = cfg.propType === "canyonRuins";
         ledgeDetails.visible = cfg.propType === "canyonRuins" || cfg.propType === "icePillar";
@@ -1689,56 +1921,41 @@
         pineTree.visible = cfg.propType !== "voxelTree";
       });
 
-      // Apply Custom Canvas-Painted Costume Texture + Limb Colors
-      heroBodyMat.map = getCostumeTexture(charKey);
-      heroBodyMat.needsUpdate = true;
-
-      heroHeadMat.color.setHex(cfg.headColor);
-      heroHairMat.color.setHex(cfg.hairColor);
-      heroArmMat.color.setHex(cfg.armColor);
-      gloveMat.color.setHex(cfg.gloveColor);
-      heroLegMat.color.setHex(cfg.legColor);
-      heroShoeMat.color.setHex(cfg.shoeColor);
-      shoeStripeMat.color.setHex(cfg.shoeStripe);
-
-      torsoMesh.visible = !cfg.isBlocky;
-      voxelTorso.visible = cfg.isBlocky;
-      headGroup.visible = !cfg.isBlocky;
-      voxelHead.visible = cfg.isBlocky;
-      hairDome.visible = !cfg.isBlocky && !["sonic", "mario", "mickey", "aang", "doraemon", "sulley"].includes(charKey);
-
-      // Toggle Custom 3D Sculpted Parts
-      marioCapGroup.visible = charKey === "mario";
-      sonicQuillsGroup.visible = charKey === "sonic";
-      isaacGear.visible = charKey === "isaac";
-      alexHair.visible = charKey === "alex";
-      steveHair.visible = charKey === "steve";
-      mickeyGear.visible = charKey === "mickey";
-      doraGear.visible = charKey === "doraemon";
-      sulleyGear.visible = charKey === "sulley";
-      iceCape.visible = charKey === "hayyan";
-      backpack.visible = charKey === "sofea";
-      airArrow.visible = charKey === "aang";
-
       rewardMat.color.setHex(cfg.rewardColor);
       rewardMat.emissive.setHex(cfg.rewardColor);
-      itemLabel.textContent = cfg.item;
+      itemLabel.textContent = gameMode === "coop" ? "TEAM TREASURE" : cfg.item;
     }
 
     heroCards.forEach((card) => {
       card.addEventListener("click", () => {
         unlockAudio();
         sfx.beep();
-        heroCards.forEach((c) => c.classList.remove("selected"));
-        card.classList.add("selected");
-        applyHeroAndArtStyle(card.dataset.char);
+        const chosen = card.dataset.char;
+        if (gameMode === "solo") {
+          p1Char = chosen;
+          p1Rig.setCharacter(p1Char);
+          applyWorldTheme(p1Char);
+        } else {
+          if (nextCoopSlot === 1) {
+            p1Char = chosen;
+            p1Rig.setCharacter(p1Char);
+            applyWorldTheme(p1Char);
+            nextCoopSlot = 2;
+          } else {
+            p2Char = chosen;
+            p2Rig.setCharacter(p2Char);
+            nextCoopSlot = 1;
+          }
+        }
+        refreshHeroSelectionUI();
       });
     });
 
-    // --- Carved Stone Temple Archways, Roaring Flame Gates & Glowing Beveled Emeralds ---
+    // --- Obstacles: Temple Arches, Fire Gates, High Beams, Moving Boulders & Sky Ramps ---
     const wallBrickMat = new THREE.MeshStandardMaterial({ color: 0xb91c1c, bumpMap: stoneMaps.bumpMap, bumpScale: 0.16, roughness: 0.65 });
     const carvedStoneMat = new THREE.MeshStandardMaterial({ color: 0xd6b88d, bumpMap: stoneMaps.bumpMap, bumpScale: 0.16, roughness: 0.72 });
     const safeArchMat = new THREE.MeshStandardMaterial({ color: 0x4ade80, emissive: 0x22c55e, emissiveIntensity: 1.6 });
+    const rampMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 1.2 });
 
     const ironMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.75, roughness: 0.25 });
     const fireCoreMat = new THREE.MeshBasicMaterial({ color: 0xfef08a });
@@ -1759,15 +1976,19 @@
     let activeObstacles = [];
     let activeRewards = [];
     let activePowerups = [];
+    let activeRamps = [];
 
     function clearWorldObjects() {
       activeObstacles.forEach((o) => scene.remove(o.mesh));
       activeRewards.forEach((r) => scene.remove(r.mesh));
       activePowerups.forEach((p) => scene.remove(p.mesh));
+      activeRamps.forEach((rm) => scene.remove(rm.mesh));
       activeObstacles = [];
       activeRewards = [];
       activePowerups = [];
+      activeRamps = [];
       rainbowGroup.visible = false;
+      bossDrone.visible = false;
     }
 
     function spawn3DWave() {
@@ -1776,7 +1997,7 @@
       const safeLane = lanes[Math.floor(Math.random() * lanes.length)];
       const roll = Math.random();
 
-      if (roll < 0.44) {
+      if (roll < 0.36) {
         const gateGroup = new THREE.Group();
         gateGroup.position.set(0, 0, spawnZ);
 
@@ -1794,7 +2015,6 @@
           } else {
             const wall = new THREE.Mesh(new THREE.BoxGeometry(LANE_WIDTH * 0.95, 4.9, 1.65), wallBrickMat);
             wall.position.set(lx, 2.45, 0);
-            wall.castShadow = true;
             const stoneCap = new THREE.Mesh(new THREE.BoxGeometry(LANE_WIDTH * 1.0, 0.45, 1.8), carvedStoneMat);
             stoneCap.position.set(lx, 4.95, 0);
             gateGroup.add(wall, stoneCap);
@@ -1803,9 +2023,9 @@
 
         scene.add(gateGroup);
         activeObstacles.push({ type: "maze", safeLane, mesh: gateGroup, hit: false });
-        spawnRewardLine(safeLane, spawnZ);
+        spawnRewardLine(safeLane, spawnZ, 1.45);
 
-      } else if (roll < 0.74) {
+      } else if (roll < 0.62) {
         const flameGroup = new THREE.Group();
         flameGroup.position.set(safeLane * LANE_WIDTH, 0, spawnZ);
 
@@ -1828,7 +2048,7 @@
         scene.add(flameGroup);
         activeObstacles.push({ type: "flame", lane: safeLane, mesh: flameGroup, fireJet: fireOuter, hit: false });
 
-      } else {
+      } else if (roll < 0.84) {
         const beamGroup = new THREE.Group();
         beamGroup.position.set(safeLane * LANE_WIDTH, 0, spawnZ);
 
@@ -1847,22 +2067,42 @@
         beamGroup.add(pillarL, pillarR, beam, floorZone);
         scene.add(beamGroup);
         activeObstacles.push({ type: "beam", lane: safeLane, mesh: beamGroup, hit: false });
+
+      } else {
+        const boulderMesh = new THREE.Mesh(new THREE.DodecahedronGeometry(1.15, 1), boulderMat);
+        boulderMesh.position.set(safeLane * LANE_WIDTH, 1.15, spawnZ);
+        boulderMesh.castShadow = true;
+        scene.add(boulderMesh);
+        activeObstacles.push({ type: "boulder", lane: safeLane, phase: Math.random() * Math.PI * 2, mesh: boulderMesh, hit: false });
       }
 
-      if (Math.random() < 0.28) {
+      if (Math.random() < 0.24) {
+        const rampLane = lanes[(safeLane + 2) % 3];
+        const rampGroup = new THREE.Group();
+        rampGroup.position.set(rampLane * LANE_WIDTH, 0, spawnZ - 14);
+        const slope = new THREE.Mesh(new THREE.BoxGeometry(LANE_WIDTH * 0.82, 0.4, 3.6), rampMat);
+        slope.rotation.x = 0.48;
+        slope.position.y = 0.85;
+        rampGroup.add(slope);
+        scene.add(rampGroup);
+        activeRamps.push({ lane: rampLane, mesh: rampGroup });
+        spawnRewardLine(rampLane, spawnZ - 19, 4.6);
+      }
+
+      if (Math.random() < 0.26) {
         const pType = Math.random() < 0.55 ? "shield" : "magnet";
         const pGeo = pType === "shield"
           ? new THREE.IcosahedronGeometry(0.65, 1)
           : new THREE.TorusKnotGeometry(0.42, 0.14, 32, 8);
         const pMesh = new THREE.Mesh(pGeo, pType === "shield" ? shieldItemMat : magnetItemMat);
-        pMesh.position.set(safeLane * LANE_WIDTH, 1.5, spawnZ - 14);
+        pMesh.position.set(safeLane * LANE_WIDTH, 1.5, spawnZ - 16);
         scene.add(pMesh);
         activePowerups.push({ type: pType, lane: safeLane, mesh: pMesh, collected: false });
       }
     }
 
-    function spawnRewardLine(lane, zStart) {
-      const cfg = HERO_CONFIGS[selectedChar] || HERO_CONFIGS.isaac;
+    function spawnRewardLine(lane, zStart, heightY = 1.45) {
+      const cfg = HERO_CONFIGS[p1Char] || HERO_CONFIGS.isaac;
       for (let i = 0; i < 3; i++) {
         let geo;
         if (cfg.rewardShape === "ring") geo = new THREE.TorusGeometry(0.55, 0.14, 12, 24);
@@ -1871,7 +2111,7 @@
         else geo = new THREE.CylinderGeometry(0.42, 0.42, 0.85, 6);
 
         const mesh = new THREE.Mesh(geo, rewardMat);
-        mesh.position.set(lane * LANE_WIDTH, 1.45, zStart - i * 3.8);
+        mesh.position.set(lane * LANE_WIDTH, heightY, zStart - i * 3.8);
         mesh.castShadow = true;
         scene.add(mesh);
         activeRewards.push({ lane, mesh, collected: false });
@@ -1890,48 +2130,26 @@
         skyUniforms.bottomColor.value.setHex(0x4338ca);
         scene.fog.color.setHex(0x1e1b4b);
       } else {
-        applyHeroAndArtStyle(selectedChar);
+        applyWorldTheme(p1Char);
       }
     }
 
-    // --- Game State, Progressive Speed & 2-Brothers Turn Mode ---
+    // --- Game State & Controls ---
     let gameRunning = false;
-    let gameMode = "1p";
-    let currentBrother = 1;
-    let brother1Score = 0;
-
     let lives = 3;
     let score = 0;
     let distanceMeters = 0;
     let nextRainbowMilestone = 250;
+    let nextBossMilestone = 500;
+    let bossChaseTimer = 0;
+    let bossDropTimer = 0;
     let biomeStage = 0;
-    let bestScore = parseInt(localStorage.getItem("templeRunner3DBest") || "0", 10);
-    bestDisplay.textContent = bestScore;
 
     let invulnTimer = 0;
     let shieldActive = false;
     let magnetTimer = 0;
     let spawnDistAccumulator = 0;
     let rainbowSafeBuffer = 0;
-
-    let playerLane = 0;
-    let jumpY = 0;
-    let jumpVelY = 0;
-    const GRAVITY = -26;
-    const JUMP_IMPULSE = 12.2;
-    let isDucking = false;
-    let duckTimer = 0;
-    let landingSquash = 0;
-
-    modeOpts.forEach((opt) => {
-      opt.addEventListener("click", () => {
-        unlockAudio();
-        sfx.beep();
-        modeOpts.forEach((o) => o.classList.remove("active"));
-        opt.classList.add("active");
-        gameMode = opt.dataset.mode;
-      });
-    });
 
     const speedLabels = { "1": "4yo (Gentle)", "2": "5yo (Normal)", "3": "Turbo" };
     const speedValues = { "1": 12.0, "2": 17.5, "3": 24.0 };
@@ -1944,30 +2162,35 @@
       worldSpeed = baseSpeed;
     });
 
-    function triggerJump() {
-      if (jumpY <= 0.05) {
-        jumpVelY = JUMP_IMPULSE;
-        isDucking = false;
-        duckTimer = 0;
-        sfx.jump();
+    function triggerRigJump(rig) {
+      const floorY = rig.onSkyBridge ? 3.4 : 0;
+      if (rig.jumpY <= floorY + 0.08) {
+        const cfg = HERO_CONFIGS[rig.charKey] || HERO_CONFIGS.isaac;
+        rig.jumpVelY = 12.2;
+        rig.isDucking = false;
+        rig.duckTimer = 0;
+        sfx.jump(cfg.sfxPitch * 0.45);
       }
     }
 
-    function triggerDuck() {
-      if (!isDucking) sfx.duck();
-      isDucking = true;
-      duckTimer = 0.85;
-      if (jumpY > 0.1) jumpVelY = -14;
+    function triggerRigDuck(rig) {
+      if (!rig.isDucking) sfx.duck();
+      rig.isDucking = true;
+      rig.duckTimer = 0.85;
+      const floorY = rig.onSkyBridge ? 3.4 : 0;
+      if (rig.jumpY > floorY + 0.1) rig.jumpVelY = -14;
     }
 
     let touchStartX = 0;
     let touchStartY = 0;
+    let touchSide = 1;
 
     threeCanvas.addEventListener("touchstart", (e) => {
       unlockAudio();
       if (e.touches.length > 0) {
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
+        touchSide = (gameMode === "coop" && touchStartX > window.innerWidth * 0.5) ? 2 : 1;
       }
     }, { passive: true });
 
@@ -1977,25 +2200,27 @@
       const dy = e.changedTouches[0].clientY - touchStartY;
       if (Math.abs(dx) < 20 && Math.abs(dy) < 20) return;
 
+      const rig = touchSide === 2 ? p2Rig : p1Rig;
       if (Math.abs(dx) > Math.abs(dy)) {
-        playerLane = dx < 0 ? Math.max(-1, playerLane - 1) : Math.min(1, playerLane + 1);
+        rig.lane = dx < 0 ? Math.max(-1, rig.lane - 1) : Math.min(1, rig.lane + 1);
       } else if (dy < 0) {
-        triggerJump();
+        triggerRigJump(rig);
       } else {
-        triggerDuck();
+        triggerRigDuck(rig);
       }
     }, { passive: true });
 
-    // --- MediaPipe Camera Tracking ---
+    // --- MediaPipe Camera Tracking (Supports numPoses: 2 + Screen-Edge Proximity Lights) ---
     let poseLandmarker = null;
     let camRunning = false;
     let lastVideoTime = -1;
-    let centerX = 0.5;
-    let centerY = 0.45;
-    let latestBodyX = null;
-    let latestBodyY = null;
     let lateralThreshold = parseFloat(latSlider.value);
     let verticalThreshold = parseFloat(vertSlider.value);
+
+    const trackers = [
+      { centerX: 0.5, centerY: 0.45, latestX: null, latestY: null, shoulderW: 0.2 },
+      { centerX: 0.75, centerY: 0.45, latestX: null, latestY: null, shoulderW: 0.2 }
+    ];
 
     latSlider.addEventListener("input", () => {
       lateralThreshold = parseFloat(latSlider.value);
@@ -2024,7 +2249,7 @@
               delegate: "GPU"
             },
             runningMode: "VIDEO",
-            numPoses: 1
+            numPoses: 2
           });
         }
         const stream = await navigator.mediaDevices.getUserMedia({
@@ -2063,15 +2288,46 @@
           clearInterval(timer);
           countdownBadge.style.display = "none";
           calibrateBtn.disabled = false;
-          if (latestBodyX !== null && latestBodyY !== null) {
-            centerX = latestBodyX;
-            centerY = latestBodyY;
-            camStatus.textContent = "CALIBRATED!";
-            sfx.collect();
+
+          if (trackers[0].latestX !== null) {
+            trackers[0].centerX = trackers[0].latestX;
+            trackers[0].centerY = trackers[0].latestY;
           }
+          if (trackers[1].latestX !== null) {
+            trackers[1].centerX = trackers[1].latestX;
+            trackers[1].centerY = trackers[1].latestY;
+          }
+          camStatus.textContent = "CALIBRATED!";
+          sfx.collect();
         }
       }, 900);
     });
+
+    function updateEdgeProximityAlerts(p1Pose, p2Pose) {
+      if (!p1Pose) {
+        edgeAlertLeft.classList.remove("active");
+      } else if (p1Pose.shoulderW > 0.31) {
+        edgeTextLeft.innerHTML = gameMode === "coop" ? "⚠ P1 TOO NEAR<br>STEP BACK" : "⚠ TOO NEAR TV<br>STEP BACK";
+        edgeAlertLeft.classList.add("active");
+      } else if (p1Pose.shoulderW < 0.085) {
+        edgeTextLeft.innerHTML = gameMode === "coop" ? "⚠ P1 TOO FAR<br>STEP CLOSER" : "⚠ TOO FAR<br>STEP CLOSER";
+        edgeAlertLeft.classList.add("active");
+      } else {
+        edgeAlertLeft.classList.remove("active");
+      }
+
+      if (gameMode !== "coop" || !p2Pose) {
+        edgeAlertRight.classList.remove("active");
+      } else if (p2Pose.shoulderW > 0.31) {
+        edgeTextRight.innerHTML = "⚠ P2 TOO NEAR<br>STEP BACK";
+        edgeAlertRight.classList.add("active");
+      } else if (p2Pose.shoulderW < 0.085) {
+        edgeTextRight.innerHTML = "⚠ P2 TOO FAR<br>STEP CLOSER";
+        edgeAlertRight.classList.add("active");
+      } else {
+        edgeAlertRight.classList.remove("active");
+      }
+    }
 
     function poseLoop() {
       if (!camRunning) return;
@@ -2081,64 +2337,67 @@
         const results = poseLandmarker.detectForVideo(video, now);
         poseCtx.clearRect(0, 0, poseCanvas.width, poseCanvas.height);
 
-        const cx = centerX * poseCanvas.width;
-        const cy = centerY * poseCanvas.height;
-        poseCtx.strokeStyle = "#fbbf24";
-        poseCtx.lineWidth = 3;
-        poseCtx.beginPath();
-        poseCtx.moveTo(cx - 16, cy);
-        poseCtx.lineTo(cx + 16, cy);
-        poseCtx.moveTo(cx, cy - 16);
-        poseCtx.lineTo(cx, cy + 16);
-        poseCtx.stroke();
-
+        const detected = [];
         if (results.landmarks && results.landmarks.length > 0) {
-          const lm = results.landmarks[0];
-          if (lm[11] && lm[12]) {
-            latestBodyX = (lm[11].x + lm[12].x) / 2;
-            latestBodyY = (lm[11].y + lm[12].y) / 2;
-            poseCtx.fillStyle = "#4ade80";
-            poseCtx.fillRect(latestBodyX * poseCanvas.width - 9, latestBodyY * poseCanvas.height - 9, 18, 18);
-
-            const dx = latestBodyX - centerX;
-            const dy = latestBodyY - centerY;
-            playerLane = dx > lateralThreshold ? -1 : dx < -lateralThreshold ? 1 : 0;
-
-            if (dy < -verticalThreshold) {
-              triggerJump();
-            } else if (dy > verticalThreshold) {
-              isDucking = true;
-              duckTimer = 0.25;
+          results.landmarks.forEach((lm) => {
+            if (lm[11] && lm[12]) {
+              const bx = (lm[11].x + lm[12].x) / 2;
+              const by = (lm[11].y + lm[12].y) / 2;
+              const shoulderW = Math.abs(lm[11].x - lm[12].x);
+              detected.push({ bx, by, shoulderW });
             }
-          }
+          });
         }
+
+        // Selfie camera is horizontally mirrored (larger raw X = Left side of TV screen)
+        detected.sort((a, b) => b.bx - a.bx);
+
+        const p1Pose = detected[0] || null;
+        const p2Pose = gameMode === "coop" ? (detected[1] || null) : null;
+
+        updateEdgeProximityAlerts(p1Pose, p2Pose);
+
+        [p1Pose, p2Pose].forEach((pose, idx) => {
+          if (!pose) return;
+          const tr = trackers[idx];
+          const rig = idx === 0 ? p1Rig : p2Rig;
+          tr.latestX = pose.bx;
+          tr.latestY = pose.by;
+          tr.shoulderW = pose.shoulderW;
+
+          poseCtx.fillStyle = idx === 0 ? "#4ade80" : "#38bdf8";
+          poseCtx.fillRect(pose.bx * poseCanvas.width - 8, pose.by * poseCanvas.height - 8, 16, 16);
+
+          const dx = pose.bx - tr.centerX;
+          const dy = pose.by - tr.centerY;
+          const latThresh = gameMode === "coop" ? lateralThreshold * 0.72 : lateralThreshold;
+
+          rig.lane = dx > latThresh ? -1 : dx < -latThresh ? 1 : 0;
+
+          if (dy < -verticalThreshold) {
+            triggerRigJump(rig);
+          } else if (dy > verticalThreshold) {
+            rig.isDucking = true;
+            rig.duckTimer = 0.25;
+          }
+        });
       }
       requestAnimationFrame(poseLoop);
     }
 
     // --- Game Start / Reset ---
-    function startGame(isBrother2Turn = false) {
+    function startGame() {
       unlockAudio();
       requestWakeLock();
       clearWorldObjects();
-
-      if (!isBrother2Turn) {
-        currentBrother = 1;
-        brother1Score = 0;
-      }
-
-      if (gameMode === "2p") {
-        turnBadge.style.display = "flex";
-        turnBadge.textContent = `BROTHER ${currentBrother}`;
-      } else {
-        turnBadge.style.display = "none";
-      }
 
       lives = 3;
       score = 0;
       distanceMeters = 0;
       worldSpeed = baseSpeed;
       nextRainbowMilestone = 250;
+      nextBossMilestone = 500;
+      bossChaseTimer = 0;
       biomeStage = 0;
       applyBiome(0);
 
@@ -2148,11 +2407,18 @@
       spawnDistAccumulator = 16;
       rainbowSafeBuffer = 0;
 
-      playerLane = 0;
-      jumpY = 0;
-      jumpVelY = 0;
-      isDucking = false;
-      duckTimer = 0;
+      [p1Rig, p2Rig].forEach((r, idx) => {
+        r.lane = gameMode === "coop" ? (idx === 0 ? -1 : 1) : 0;
+        r.jumpY = 0;
+        r.jumpVelY = 0;
+        r.onSkyBridge = false;
+        r.skyBridgeTimer = 0;
+        r.isDucking = false;
+        r.duckTimer = 0;
+      });
+
+      p2Rig.root.visible = gameMode === "coop";
+      coopBadge.style.display = gameMode === "coop" ? "flex" : "none";
 
       minimizeCameraPip();
       updateHUD();
@@ -2161,23 +2427,22 @@
       startBgm();
     }
 
-    playBtn.addEventListener("click", () => {
-      const startingBrother2 = playBtn.dataset.nextTurn === "2";
-      playBtn.dataset.nextTurn = "";
-      startGame(startingBrother2);
-    });
+    playBtn.addEventListener("click", startGame);
 
     function updateHUD() {
       heartsDisplay.textContent = "♥".repeat(Math.max(0, lives)) + "♡".repeat(Math.max(0, 3 - lives));
       distDisplay.textContent = `${Math.floor(distanceMeters)}m`;
       scoreDisplay.textContent = score;
-      bestDisplay.textContent = bestScore;
+      bestDisplay.textContent = totalVault;
       shieldPill.style.display = shieldActive ? "block" : "none";
       magnetPill.style.display = magnetTimer > 0 ? "block" : "none";
-      shieldBubble.visible = shieldActive;
     }
 
-    applyHeroAndArtStyle("isaac");
+    p1Rig.setCharacter(p1Char);
+    p2Rig.setCharacter(p2Char);
+    applyWorldTheme(p1Char);
+    refreshHeroSelectionUI();
+
     let lastTime = performance.now();
 
     function animate(now) {
@@ -2200,74 +2465,43 @@
           p.mesh.position.y += p.vy * dt;
           p.mesh.position.z += p.vz * dt;
           p.mesh.scale.addScalar(dt * 1.1);
-          p.mesh.material.opacity = Math.max(0, (p.life / p.maxLife) * 0.68);
+          p.mesh.material.opacity = Math.max(0, (p.life / p.maxLife) * 0.72);
           if (p.life <= 0) p.mesh.visible = false;
         }
       });
 
-      const targetX = playerLane * LANE_WIDTH;
-      const dxLane = targetX - heroRoot.position.x;
-      heroRoot.position.x += dxLane * 11 * dt;
-      heroRoot.rotation.z = THREE.MathUtils.clamp(-dxLane * 0.14, -0.28, 0.28);
+      const activeRigs = gameMode === "coop" ? [p1Rig, p2Rig] : [p1Rig];
+      activeRigs.forEach((rig) => {
+        rig.updateVisuals(dt, now, invulnTimer, shieldActive);
+      });
 
-      camera.position.x += (heroRoot.position.x * 0.35 - camera.position.x) * 6 * dt;
-      camera.position.y += ((4.7 + jumpY * 0.25) - camera.position.y) * 6 * dt;
-
-      if (jumpY > 0 || jumpVelY > 0) {
-        jumpY += jumpVelY * dt;
-        jumpVelY += GRAVITY * dt;
-        if (jumpY <= 0) {
-          jumpY = 0;
-          jumpVelY = 0;
-          landingSquash = 0.22;
-          spawnParticle(heroRoot.position.x, 0.2, 0.35, 0xe7dcc8, 1.35, 1.4, 0.65);
-        }
-      }
-      heroRoot.position.y = jumpY;
-
-      if (landingSquash > 0) landingSquash = Math.max(0, landingSquash - dt * 1.4);
-
-      const cfg = HERO_CONFIGS[selectedChar] || HERO_CONFIGS.isaac;
-      const isAirborne = jumpY > 0.15;
-      const isSonicBall = selectedChar === "sonic" && (isAirborne || isDucking);
-
-      leftLegGroup.visible = rightLegGroup.visible = leftArmGroup.visible = rightArmGroup.visible = accGroup.visible = !isSonicBall;
-      torsoMesh.visible = !cfg.isBlocky && !isSonicBall;
-      voxelTorso.visible = cfg.isBlocky && !isSonicBall;
-      headGroup.visible = !cfg.isBlocky && !isSonicBall;
-      voxelHead.visible = cfg.isBlocky && !isSonicBall;
-      spinBall.visible = isSonicBall;
-      if (isSonicBall) spinBall.rotation.x -= 20 * dt;
-
-      const runCycle = Math.sin(now * 0.014);
-      leftLegGroup.rotation.x = isAirborne ? 0.55 : runCycle * 0.75;
-      rightLegGroup.rotation.x = isAirborne ? -0.45 : -runCycle * 0.75;
-      leftArmGroup.rotation.x = isAirborne ? -0.7 : -runCycle * 0.65;
-      rightArmGroup.rotation.x = isAirborne ? -0.7 : runCycle * 0.65;
-
-      const targetScaleY = isDucking && !isSonicBall ? 0.52 : 1.0 - landingSquash;
-      const targetScaleXZ = isDucking && !isSonicBall ? 1.18 : 1.0 + landingSquash * 0.7;
-      heroRoot.scale.y += (targetScaleY - heroRoot.scale.y) * 16 * dt;
-      heroRoot.scale.x += (targetScaleXZ - heroRoot.scale.x) * 16 * dt;
-      heroRoot.scale.z += (targetScaleXZ - heroRoot.scale.z) * 16 * dt;
-
-      heroRoot.visible = invulnTimer <= 0 || Math.floor(now / 80) % 2 === 0;
+      const focusX = gameMode === "coop" ? (p1Rig.root.position.x + p2Rig.root.position.x) * 0.25 : p1Rig.root.position.x * 0.35;
+      const focusY = 4.9 + Math.max(p1Rig.jumpY, gameMode === "coop" ? p2Rig.jumpY : 0) * 0.25;
+      camera.position.x += (focusX - camera.position.x) * 6 * dt;
+      camera.position.y += (focusY - camera.position.y) * 6 * dt;
 
       if (gameRunning) {
         worldSpeed = Math.min(baseSpeed + 12.0, baseSpeed + (distanceMeters / 100) * 1.15);
 
-        if (!isAirborne) {
-          dustSpawnTimer += dt;
-          if (dustSpawnTimer >= 0.09) {
-            dustSpawnTimer = 0;
-            spawnParticle(heroRoot.position.x, 0.22, 0.4, 0xe7dcc8, 1.05, 1.1, 0.55);
+        activeRigs.forEach((rig) => {
+          const floorY = rig.onSkyBridge ? 3.4 : 0;
+          if (rig.jumpY <= floorY + 0.15) {
+            rig.dustTimer += dt;
+            if (rig.dustTimer >= 0.09) {
+              rig.dustTimer = 0;
+              spawnFootstepTrail(rig.root.position.x, floorY + 0.2, 0.4, rig.stepCounter++);
+            }
           }
-        }
+          if (rig.skyBridgeTimer > 0) {
+            rig.skyBridgeTimer -= dt;
+            if (rig.skyBridgeTimer <= 0) rig.onSkyBridge = false;
+          }
+          if (rig.duckTimer > 0) {
+            rig.duckTimer -= dt;
+            if (rig.duckTimer <= 0) rig.isDucking = false;
+          }
+        });
 
-        if (duckTimer > 0) {
-          duckTimer -= dt;
-          if (duckTimer <= 0) isDucking = false;
-        }
         if (invulnTimer > 0) invulnTimer -= dt;
         if (magnetTimer > 0) magnetTimer -= dt;
 
@@ -2276,6 +2510,7 @@
         stoneMaps.bumpMap.offset.y = stoneMaps.map.offset.y;
 
         distanceMeters += moveStep * 1.6;
+
         if (distanceMeters >= nextRainbowMilestone) {
           rainbowGroup.position.set(0, 0, -122);
           rainbowGroup.visible = true;
@@ -2284,10 +2519,32 @@
           applyBiome(biomeStage);
           sfx.rainbow();
 
-          rainbowToast.textContent = `🌈 ${nextRainbowMilestone}m! FASTER & NEW BIOME!`;
+          rainbowToast.textContent = `🌈 ${nextRainbowMilestone}m! NEW BIOME!`;
           rainbowToast.classList.add("show");
           setTimeout(() => rainbowToast.classList.remove("show"), 3000);
           nextRainbowMilestone += 250;
+        }
+
+        if (distanceMeters >= nextBossMilestone) {
+          bossChaseTimer = 14.0;
+          bossDrone.visible = true;
+          nextBossMilestone += 500;
+          rainbowToast.textContent = "🛸 SKY DRONE BONUS CHASE!";
+          rainbowToast.classList.add("show");
+          setTimeout(() => rainbowToast.classList.remove("show"), 3000);
+        }
+
+        if (bossChaseTimer > 0) {
+          bossChaseTimer -= dt;
+          bossDrone.position.x = Math.sin(now * 0.0022) * LANE_WIDTH;
+          bossDrone.rotation.y += 2.5 * dt;
+          bossDropTimer += dt;
+          if (bossDropTimer >= 1.1) {
+            bossDropTimer = 0;
+            const dropLane = Math.round(bossDrone.position.x / LANE_WIDTH);
+            spawnRewardLine(dropLane, -36, 1.45);
+          }
+          if (bossChaseTimer <= 0) bossDrone.visible = false;
         }
 
         if (rainbowGroup.visible) {
@@ -2310,61 +2567,90 @@
           }
         }
 
+        activeRamps.forEach((rm) => {
+          rm.mesh.position.z += moveStep;
+          activeRigs.forEach((rig) => {
+            if (!rig.onSkyBridge && Math.abs(rm.mesh.position.z) < 1.6 && rig.lane === rm.lane) {
+              rig.onSkyBridge = true;
+              rig.skyBridgeTimer = 2.6;
+              rig.jumpY = 3.4;
+              rig.jumpVelY = 3.5;
+              sfx.ramp();
+            }
+          });
+        });
+
         activeRewards.forEach((r) => {
           r.mesh.position.z += moveStep;
           r.mesh.rotation.y += 3.2 * dt;
 
-          if (magnetTimer > 0 && r.mesh.position.z > -38 && r.mesh.position.z < 2) {
-            r.mesh.position.x += (heroRoot.position.x - r.mesh.position.x) * 8 * dt;
-            r.lane = playerLane;
-          }
-
-          if (!r.collected && Math.abs(r.mesh.position.z) < 1.4 && Math.abs(r.mesh.position.x - heroRoot.position.x) < 1.2) {
-            r.collected = true;
-            r.mesh.visible = false;
-            score += 1;
-            spawnParticle(heroRoot.position.x, 1.4, 0, cfg.rewardColor, 1.15, 2.0, 0.45);
-            if (score > bestScore) {
-              bestScore = score;
-              localStorage.setItem("templeRunner3DBest", bestScore.toString());
+          activeRigs.forEach((rig) => {
+            if (magnetTimer > 0 && r.mesh.position.z > -38 && r.mesh.position.z < 2) {
+              r.mesh.position.x += (rig.root.position.x - r.mesh.position.x) * 7 * dt;
+              r.lane = rig.lane;
             }
-            sfx.collect();
-          }
+
+            if (!r.collected && Math.abs(r.mesh.position.z) < 1.5 && Math.abs(r.mesh.position.x - rig.root.position.x) < 1.25) {
+              r.collected = true;
+              r.mesh.visible = false;
+              score += 1;
+              totalVault += 1;
+              localStorage.setItem("templeRunnerVault", totalVault.toString());
+              vaultCountEl.textContent = totalVault;
+              const cfg = HERO_CONFIGS[rig.charKey] || HERO_CONFIGS.isaac;
+              spawnParticle(rig.root.position.x, rig.jumpY + 1.4, 0, cfg.rewardColor, 1.15, 2.0, 0.45);
+              sfx.collect(cfg.sfxPitch);
+            }
+          });
         });
 
         activePowerups.forEach((p) => {
           p.mesh.position.z += moveStep;
           p.mesh.rotation.y += 2.8 * dt;
-          if (!p.collected && Math.abs(p.mesh.position.z) < 1.4 && p.lane === playerLane) {
-            p.collected = true;
-            p.mesh.visible = false;
-            sfx.powerup();
-            if (p.type === "shield") shieldActive = true;
-            if (p.type === "magnet") magnetTimer = 9.0;
-          }
+          activeRigs.forEach((rig) => {
+            if (!p.collected && Math.abs(p.mesh.position.z) < 1.5 && p.lane === rig.lane) {
+              p.collected = true;
+              p.mesh.visible = false;
+              sfx.powerup();
+              if (p.type === "shield") shieldActive = true;
+              if (p.type === "magnet") magnetTimer = 9.0;
+            }
+          });
         });
 
         let nearestPrompt = null;
         activeObstacles.forEach((obs) => {
           obs.mesh.position.z += moveStep;
+
           if (obs.type === "flame" && obs.fireJet) {
             obs.fireJet.scale.set(0.85 + Math.sin(now * 0.03) * 0.35, 1, 0.85 + Math.cos(now * 0.03) * 0.35);
             if (Math.random() < 0.4 && obs.mesh.position.z > -65 && obs.mesh.position.z < 5) {
               spawnParticle(obs.mesh.position.x, 0.75, obs.mesh.position.z, 0xf97316, 0.8, 2.4, 0.4);
             }
+          } else if (obs.type === "boulder") {
+            obs.mesh.rotation.x += 5 * dt;
+            const swayLane = Math.round(Math.sin(now * 0.002 + obs.phase));
+            obs.lane = swayLane;
+            obs.mesh.position.x += (swayLane * LANE_WIDTH - obs.mesh.position.x) * 4 * dt;
           }
 
           const zPos = obs.mesh.position.z;
           if (zPos > -46 && zPos < -3) {
-            if (obs.type === "flame" && obs.lane === playerLane) nearestPrompt = "⬆ JUMP OVER FLAMES!";
-            if (obs.type === "beam" && obs.lane === playerLane) nearestPrompt = "⬇ DUCK UNDER BEAM!";
+            activeRigs.forEach((rig) => {
+              if (obs.type === "flame" && obs.lane === rig.lane) nearestPrompt = "⬆ JUMP OVER FLAMES!";
+              if (obs.type === "beam" && obs.lane === rig.lane) nearestPrompt = "⬇ DUCK UNDER BEAM!";
+            });
           }
 
           if (!obs.hit && Math.abs(zPos) < 1.15 && invulnTimer <= 0) {
             let crashed = false;
-            if (obs.type === "maze" && playerLane !== obs.safeLane) crashed = true;
-            if (obs.type === "flame" && playerLane === obs.lane && jumpY < 1.1) crashed = true;
-            if (obs.type === "beam" && playerLane === obs.lane && !isDucking) crashed = true;
+            activeRigs.forEach((rig) => {
+              if (rig.onSkyBridge) return;
+              if (obs.type === "maze" && rig.lane !== obs.safeLane) crashed = true;
+              if (obs.type === "flame" && rig.lane === obs.lane && rig.jumpY < 1.1) crashed = true;
+              if (obs.type === "beam" && rig.lane === obs.lane && !rig.isDucking) crashed = true;
+              if (obs.type === "boulder" && rig.lane === obs.lane && rig.jumpY < 1.3) crashed = true;
+            });
 
             if (crashed) {
               obs.hit = true;
@@ -2379,30 +2665,16 @@
 
                 if (lives <= 0) {
                   gameRunning = false;
+                  edgeAlertLeft.classList.remove("active");
+                  edgeAlertRight.classList.remove("active");
                   sfx.celebrate();
-                  const unit = cfg.item;
+                  refreshTrailButtons();
 
-                  if (gameMode === "2p" && currentBrother === 1) {
-                    brother1Score = score;
-                    currentBrother = 2;
-                    overlayTitle.textContent = "BROTHER 2'S TURN!";
-                    overlaySub.innerHTML = `Brother 1 scored <strong>${brother1Score} ${unit}</strong>! Pass the spotlight to Brother 2!`;
-                    playBtn.textContent = "▶ START BROTHER 2";
-                    playBtn.dataset.nextTurn = "2";
-                    overlayScreen.classList.remove("hidden");
-                  } else if (gameMode === "2p" && currentBrother === 2) {
-                    overlayTitle.textContent = "BROTHERS FINISH!";
-                    overlaySub.innerHTML = `Brother 1: <strong>${brother1Score} ${unit}</strong> &bull; Brother 2: <strong>${score} ${unit}</strong>!`;
-                    playBtn.textContent = "↻ PLAY AGAIN";
-                    playBtn.dataset.nextTurn = "";
-                    overlayScreen.classList.remove("hidden");
-                  } else {
-                    overlayTitle.textContent = `${cfg.name} RUN COMPLETE!`;
-                    overlaySub.innerHTML = `You ran <strong>${Math.floor(distanceMeters)}m</strong> and collected <strong>${score} ${unit}</strong>!`;
-                    playBtn.textContent = "↻ PLAY AGAIN";
-                    playBtn.dataset.nextTurn = "";
-                    overlayScreen.classList.remove("hidden");
-                  }
+                  const cfg = HERO_CONFIGS[p1Char] || HERO_CONFIGS.isaac;
+                  overlayTitle.textContent = gameMode === "coop" ? "TEAM CO-OP COMPLETE!" : `${cfg.name} RUN COMPLETE!`;
+                  overlaySub.innerHTML = `You ran <strong>${Math.floor(distanceMeters)}m</strong> and added <strong>${score}</strong> treasures to the Vault!`;
+                  playBtn.textContent = "↻ PLAY AGAIN";
+                  overlayScreen.classList.remove("hidden");
                 }
               }
             }
@@ -2420,6 +2692,10 @@
 
         activeObstacles = activeObstacles.filter((o) => {
           if (o.mesh.position.z > 14) { scene.remove(o.mesh); return false; }
+          return true;
+        });
+        activeRamps = activeRamps.filter((rm) => {
+          if (rm.mesh.position.z > 14) { scene.remove(rm.mesh); return false; }
           return true;
         });
         activeRewards = activeRewards.filter((r) => {
