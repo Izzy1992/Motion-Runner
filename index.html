@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>Temple Runner 3D - Ultimate Co-Op &amp; Boss Chase Edition</title>
+  <title>Temple Runner 3D - Ultimate Co-Op &amp; Cel-Shaded Edition</title>
   <style>
     * {
       box-sizing: border-box;
@@ -1536,198 +1536,362 @@
     bossDrone.visible = false;
     scene.add(bossDrone);
 
-    // --- Reusable Custom Sculpted Hero Rig Factory (Supports Solo 1 Hero OR Co-Op 2 Heroes) ---
+    // --- Cel-Shaded Toon Gradient & Inverted-Hull Outline Helpers ---
     const costumeTexCache = {};
     function getCostumeTexture(charKey) {
       if (!costumeTexCache[charKey]) costumeTexCache[charKey] = createCostumeTexture(charKey);
       return costumeTexCache[charKey];
     }
 
+    const TOON_GRADIENT = (() => {
+      const data = new Uint8Array([145, 145, 145, 255, 255, 255, 255, 255]);
+      const tex = new THREE.DataTexture(data, 2, 1, THREE.RGBAFormat);
+      tex.minFilter = THREE.NearestFilter;
+      tex.magFilter = THREE.NearestFilter;
+      tex.needsUpdate = true;
+      return tex;
+    })();
+
+    const OUTLINE_MAT = new THREE.MeshBasicMaterial({
+      color: 0x111827,
+      side: THREE.BackSide
+    });
+
+    function makeToonMat(params) {
+      return new THREE.MeshToonMaterial({
+        gradientMap: TOON_GRADIENT,
+        ...params
+      });
+    }
+
+    function applyToonOutlines(rootGroup, scaleFactor = 1.065) {
+      const targets = [];
+      rootGroup.traverse((obj) => {
+        if (!obj.isMesh || obj.userData.noOutline) return;
+        const mat = obj.material;
+        if (!mat || mat.transparent || mat.side === THREE.BackSide || mat.side === THREE.DoubleSide) return;
+        targets.push(obj);
+      });
+      targets.forEach((mesh) => {
+        const outline = new THREE.Mesh(mesh.geometry, OUTLINE_MAT);
+        outline.scale.setScalar(scaleFactor);
+        outline.userData.noOutline = true;
+        mesh.add(outline);
+      });
+    }
+
+    // --- Reusable Custom Sculpted Hero Rig Factory (Cel-Shaded Storybook Style) ---
     function createHeroRig(ringColorHex) {
       const root = new THREE.Group();
       scene.add(root);
 
-      const bodyMat = new THREE.MeshStandardMaterial({ map: getCostumeTexture("isaac"), roughness: 0.42 });
-      const headMat = new THREE.MeshStandardMaterial({ color: 0xf5c6a5, roughness: 0.45 });
-      const hairMat = new THREE.MeshStandardMaterial({ color: 0x4a2c18, roughness: 0.65 });
-      const armMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.45 });
-      const gloveMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.35 });
-      const legMat = new THREE.MeshStandardMaterial({ color: 0x1d4ed8, roughness: 0.48 });
-      const shoeMat = new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.35 });
-      const stripeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.35 });
-      const sonicBallMat = new THREE.MeshStandardMaterial({ color: 0x2563eb, emissive: 0x1d4ed8, emissiveIntensity: 0.8 });
+      const bodyMat = makeToonMat({ map: getCostumeTexture("isaac") });
+      const headMat = makeToonMat({ color: 0xf5c6a5 });
+      const hairMat = makeToonMat({ color: 0x4a2c18 });
+      const armMat = makeToonMat({ color: 0xffffff });
+      const gloveMat = makeToonMat({ color: 0xffffff });
+      const legMat = makeToonMat({ color: 0x1d4ed8 });
+      const shoeMat = makeToonMat({ color: 0xef4444 });
+      const stripeMat = makeToonMat({ color: 0xffffff });
+      const soleMat = makeToonMat({ color: 0x1e293b });
+      const goldMat = makeToonMat({ color: 0xfacc15 });
+      const highlightMat = makeToonMat({ color: 0xffffff });
+      const sonicBallMat = makeToonMat({ color: 0x2563eb, emissive: 0x1d4ed8, emissiveIntensity: 0.45 });
 
       const groundRing = new THREE.Mesh(
-        new THREE.RingGeometry(0.75, 0.98, 24),
-        new THREE.MeshBasicMaterial({ color: ringColorHex, side: THREE.DoubleSide, transparent: true, opacity: 0.85 })
+        new THREE.RingGeometry(0.76, 1.0, 24),
+        new THREE.MeshBasicMaterial({ color: ringColorHex, side: THREE.DoubleSide, transparent: true, opacity: 0.88 })
       );
       groundRing.rotation.x = -Math.PI / 2;
       groundRing.position.y = 0.04;
+      groundRing.userData.noOutline = true;
       root.add(groundRing);
 
-      const leftLegGroup = new THREE.Group();
-      leftLegGroup.position.set(-0.28, 0.92, 0);
-      const leftLegMesh = new THREE.Mesh(new THREE.CapsuleGeometry(0.19, 0.48, 8, 12), legMat);
-      leftLegMesh.position.y = -0.34;
-      const leftCuff = new THREE.Mesh(new THREE.CylinderGeometry(0.21, 0.21, 0.14, 12), stripeMat);
-      leftCuff.position.y = -0.58;
-      const leftShoe = new THREE.Mesh(new THREE.SphereGeometry(0.28, 12, 12), shoeMat);
-      leftShoe.scale.set(1.06, 0.72, 1.52);
-      leftShoe.position.set(0, -0.73, -0.09);
-      const leftShoeStrap = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.12, 0.22), stripeMat);
-      leftShoeStrap.position.set(0, -0.68, -0.08);
-      leftLegGroup.add(leftLegMesh, leftCuff, leftShoe, leftShoeStrap);
+      function buildLeg(sideSign) {
+        const legGroup = new THREE.Group();
+        legGroup.position.set(sideSign * 0.29, 0.92, 0);
 
-      const rightLegGroup = new THREE.Group();
-      rightLegGroup.position.set(0.28, 0.92, 0);
-      const rightLegMesh = new THREE.Mesh(new THREE.CapsuleGeometry(0.19, 0.48, 8, 12), legMat);
-      rightLegMesh.position.y = -0.34;
-      const rightCuff = new THREE.Mesh(new THREE.CylinderGeometry(0.21, 0.21, 0.14, 12), stripeMat);
-      rightCuff.position.y = -0.58;
-      const rightShoe = new THREE.Mesh(new THREE.SphereGeometry(0.28, 12, 12), shoeMat);
-      rightShoe.scale.set(1.06, 0.72, 1.52);
-      rightShoe.position.set(0, -0.73, -0.09);
-      const rightShoeStrap = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.12, 0.22), stripeMat);
-      rightShoeStrap.position.set(0, -0.68, -0.08);
-      rightLegGroup.add(rightLegMesh, rightCuff, rightShoe, rightShoeStrap);
+        const legMesh = new THREE.Mesh(new THREE.CapsuleGeometry(0.2, 0.46, 6, 10), legMat);
+        legMesh.position.y = -0.32;
 
-      const torsoMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.46, 0.5, 1.05, 18), bodyMat);
-      torsoMesh.position.set(0, 1.48, 0);
+        const cuff = new THREE.Mesh(new THREE.CylinderGeometry(0.23, 0.23, 0.15, 10), stripeMat);
+        cuff.position.y = -0.56;
+
+        const shoeUpper = new THREE.Mesh(new THREE.SphereGeometry(0.3, 12, 10), shoeMat);
+        shoeUpper.scale.set(1.08, 0.72, 1.56);
+        shoeUpper.position.set(0, -0.71, -0.09);
+
+        const shoeSole = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.11, 0.92), soleMat);
+        shoeSole.position.set(0, -0.84, -0.09);
+
+        const shoeStrap = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.12, 0.22), stripeMat);
+        shoeStrap.position.set(0, -0.66, -0.08);
+
+        const heelTab = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.18, 0.1), stripeMat);
+        heelTab.position.set(0, -0.65, 0.34);
+
+        legGroup.add(legMesh, cuff, shoeUpper, shoeSole, shoeStrap, heelTab);
+        return legGroup;
+      }
+
+      const leftLegGroup = buildLeg(-1);
+      const rightLegGroup = buildLeg(1);
+
+      const torsoGroup = new THREE.Group();
+      torsoGroup.position.set(0, 1.48, 0);
+
+      const torsoMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.47, 0.53, 1.06, 16), bodyMat);
       torsoMesh.rotation.y = Math.PI * 0.5;
       torsoMesh.castShadow = true;
+      torsoGroup.add(torsoMesh);
 
-      const voxelTorso = new THREE.Mesh(new THREE.BoxGeometry(0.96, 1.08, 0.58), bodyMat);
+      const voxelTorso = new THREE.Mesh(new THREE.BoxGeometry(0.98, 1.08, 0.6), bodyMat);
       voxelTorso.position.set(0, 1.5, 0);
       voxelTorso.visible = false;
 
-      const voxelHead = new THREE.Mesh(new THREE.BoxGeometry(0.96, 0.96, 0.96), headMat);
-      voxelHead.position.set(0, 2.55, 0);
-      voxelHead.visible = false;
+      function buildArm(sideSign) {
+        const armGroup = new THREE.Group();
+        armGroup.position.set(sideSign * 0.68, 1.84, 0);
 
-      const leftArmGroup = new THREE.Group();
-      leftArmGroup.position.set(-0.65, 1.84, 0);
-      const leftArmMesh = new THREE.Mesh(new THREE.CapsuleGeometry(0.15, 0.46, 8, 12), armMat);
-      leftArmMesh.position.y = -0.3;
-      const leftGlove = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10, 10), gloveMat);
-      leftGlove.position.y = -0.62;
-      leftArmGroup.add(leftArmMesh, leftGlove);
+        const armMesh = new THREE.Mesh(new THREE.CapsuleGeometry(0.16, 0.44, 6, 10), armMat);
+        armMesh.position.y = -0.28;
 
-      const rightArmGroup = new THREE.Group();
-      rightArmGroup.position.set(0.65, 1.84, 0);
-      const rightArmMesh = new THREE.Mesh(new THREE.CapsuleGeometry(0.15, 0.46, 8, 12), armMat);
-      rightArmMesh.position.y = -0.3;
-      const rightGlove = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10, 10), gloveMat);
-      rightGlove.position.y = -0.62;
-      rightArmGroup.add(rightArmMesh, rightGlove);
+        const wristCuff = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.13, 10), stripeMat);
+        wristCuff.position.y = -0.49;
+
+        const glove = new THREE.Mesh(new THREE.SphereGeometry(0.25, 12, 10), gloveMat);
+        glove.position.y = -0.65;
+
+        armGroup.add(armMesh, wristCuff, glove);
+        return armGroup;
+      }
+
+      const leftArmGroup = buildArm(-1);
+      const rightArmGroup = buildArm(1);
 
       const headGroup = new THREE.Group();
-      headGroup.position.set(0, 2.55, 0);
-      const headSphere = new THREE.Mesh(new THREE.SphereGeometry(0.58, 20, 20), headMat);
+      headGroup.position.set(0, 2.62, 0);
+
+      const headSphere = new THREE.Mesh(new THREE.SphereGeometry(0.64, 18, 16), headMat);
+
       const hairDome = new THREE.Mesh(
-        new THREE.SphereGeometry(0.61, 18, 18, 0, Math.PI * 2, 0, Math.PI * 0.56),
+        new THREE.SphereGeometry(0.67, 16, 14, 0, Math.PI * 2, 0, Math.PI * 0.58),
         hairMat
       );
-      hairDome.rotation.x = 0.28;
-      headGroup.add(headSphere, hairDome);
+      hairDome.rotation.x = 0.3;
 
+      const hairShine = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.08, 0.18), highlightMat);
+      hairShine.position.set(0, 0.58, 0.15);
+      hairShine.rotation.x = -0.35;
+
+      const earL = new THREE.Mesh(new THREE.SphereGeometry(0.15, 10, 10), headMat);
+      earL.position.set(-0.62, -0.04, 0.04);
+      const earR = new THREE.Mesh(new THREE.SphereGeometry(0.15, 10, 10), headMat);
+      earR.position.set(0.62, -0.04, 0.04);
+
+      headGroup.add(headSphere, hairDome, hairShine, earL, earR);
+
+      const voxelHead = new THREE.Mesh(new THREE.BoxGeometry(1.02, 1.02, 1.02), headMat);
+      voxelHead.position.set(0, 2.6, 0);
+      voxelHead.visible = false;
+
+      // --- Signature 3D Silhouettes & Back-View Details per Hero ---
       const accGroup = new THREE.Group();
       root.add(accGroup);
 
-      const marioCapGroup = new THREE.Group();
-      const capCrown = new THREE.Mesh(new THREE.SphereGeometry(0.63, 18, 18, 0, Math.PI * 2, 0, Math.PI * 0.52), new THREE.MeshStandardMaterial({ color: 0xdc2626 }));
-      capCrown.position.set(0, 2.62, 0);
-      const capBrim = new THREE.Mesh(new THREE.CylinderGeometry(0.58, 0.62, 0.09, 18, 1, false, Math.PI * 0.65, Math.PI * 0.7), new THREE.MeshStandardMaterial({ color: 0xb91c1c }));
-      capBrim.position.set(0, 2.66, -0.18);
-      marioCapGroup.add(capCrown, capBrim);
+      // 1. Isaac (Ben 10): Omnitrix Wrist Watch + Spiky Hair Tufts
+      const isaacGear = new THREE.Group();
+      const omniBand = new THREE.Mesh(new THREE.CylinderGeometry(0.21, 0.21, 0.18, 10), soleMat);
+      omniBand.position.set(-0.68, 1.32, 0);
+      const omniDial = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.2, 10), makeToonMat({ color: 0x4ade80 }));
+      omniDial.position.set(-0.68, 1.32, 0);
+      const isaacTuft1 = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.42, 8), hairMat);
+      isaacTuft1.position.set(0, 3.32, -0.08);
+      isaacTuft1.rotation.x = -0.35;
+      const isaacTuft2 = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.36, 8), hairMat);
+      isaacTuft2.position.set(0.18, 3.26, 0.05);
+      isaacTuft2.rotation.z = -0.3;
+      isaacGear.add(omniBand, omniDial, isaacTuft1, isaacTuft2);
 
-      const sonicQuillsGroup = new THREE.Group();
-      const qMat = new THREE.MeshStandardMaterial({ color: 0x2563eb, roughness: 0.35 });
+      // 2. Hayyan (Frozen Ice): Royal Crown + Flowing Translucent Frost Cape
+      const hayyanGear = new THREE.Group();
+      const iceCrown = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.46, 0.22, 8), goldMat);
+      iceCrown.position.set(0, 3.24, 0);
+      const iceCape = new THREE.Mesh(
+        new THREE.BoxGeometry(0.94, 1.36, 0.07),
+        new THREE.MeshToonMaterial({ color: 0xbae6fd, gradientMap: TOON_GRADIENT, transparent: true, opacity: 0.82 })
+      );
+      iceCape.position.set(0, 1.48, 0.54);
+      iceCape.rotation.x = 0.24;
+      iceCape.userData.noOutline = true;
+      hayyanGear.add(iceCrown, iceCape);
+
+      // 3. Sofea (Star Explorer): Twin Bouncy Pigtails + Star Backpack
+      const sofeaGear = new THREE.Group();
+      const pigtailL = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.72, 10), hairMat);
+      pigtailL.position.set(-0.68, 2.55, 0.18);
+      pigtailL.rotation.set(0.35, 0, 0.55);
+      const pigtailR = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.72, 10), hairMat);
+      pigtailR.position.set(0.68, 2.55, 0.18);
+      pigtailR.rotation.set(0.35, 0, -0.55);
+      const backpack = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.76, 0.36), makeToonMat({ color: 0x7e22ce }));
+      backpack.position.set(0, 1.54, 0.52);
+      const packStar = new THREE.Mesh(new THREE.OctahedronGeometry(0.18, 0), goldMat);
+      packStar.position.set(0, 1.56, 0.72);
+      sofeaGear.add(pigtailL, pigtailR, backpack, packStar);
+
+      // 4. Steve (Minecraft): Voxel Hair Cap with Back Neck Step
+      const steveGear = new THREE.Group();
+      const steveCap = new THREE.Mesh(new THREE.BoxGeometry(1.06, 0.34, 1.06), hairMat);
+      steveCap.position.set(0, 3.0, 0);
+      const steveBackHair = new THREE.Mesh(new THREE.BoxGeometry(1.06, 0.24, 0.22), hairMat);
+      steveBackHair.position.set(0, 2.74, 0.44);
+      steveGear.add(steveCap, steveBackHair);
+
+      // 5. Alex (Minecraft): Voxel Hair + Articulated Swinging Orange Ponytail
+      const alexGear = new THREE.Group();
+      const alexCap = new THREE.Mesh(new THREE.BoxGeometry(1.06, 0.36, 1.06), hairMat);
+      alexCap.position.set(0, 3.0, 0);
+      const alexPonytail = new THREE.Mesh(new THREE.BoxGeometry(0.34, 1.18, 0.28), hairMat);
+      alexPonytail.position.set(0.22, 2.25, 0.56);
+      alexGear.add(alexCap, alexPonytail);
+
+      // 6. Sonic: 5 Swept-Back Quills + Spine Quill + Pointed Hedgehog Ears
+      const sonicGear = new THREE.Group();
+      const sonicBlueMat = makeToonMat({ color: 0x2563eb });
       [
-        { x: 0, y: 2.82, z: 0.56, rx: 0.95, ry: 0, s: 1.15 },
-        { x: -0.26, y: 2.66, z: 0.52, rx: 1.05, ry: -0.25, s: 1.0 },
-        { x: 0.26, y: 2.66, z: 0.52, rx: 1.05, ry: 0.25, s: 1.0 },
-        { x: 0, y: 2.42, z: 0.54, rx: 1.15, ry: 0, s: 1.05 },
-        { x: 0, y: 1.72, z: 0.48, rx: 1.25, ry: 0, s: 0.85 }
+        { x: 0, y: 2.9, z: 0.62, rx: 0.92, ry: 0, s: 1.22 },
+        { x: -0.3, y: 2.72, z: 0.56, rx: 1.02, ry: -0.28, s: 1.05 },
+        { x: 0.3, y: 2.72, z: 0.56, rx: 1.02, ry: 0.28, s: 1.05 },
+        { x: 0, y: 2.45, z: 0.58, rx: 1.15, ry: 0, s: 1.1 },
+        { x: 0, y: 1.72, z: 0.52, rx: 1.28, ry: 0, s: 0.9 }
       ].forEach((q) => {
-        const cone = new THREE.Mesh(new THREE.ConeGeometry(0.28 * q.s, 1.05 * q.s, 10), qMat);
+        const cone = new THREE.Mesh(new THREE.ConeGeometry(0.3 * q.s, 1.12 * q.s, 10), sonicBlueMat);
         cone.position.set(q.x, q.y, q.z);
         cone.rotation.set(q.rx, q.ry, 0);
-        sonicQuillsGroup.add(cone);
+        sonicGear.add(cone);
+      });
+      const sonicEarL = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.38, 6), sonicBlueMat);
+      sonicEarL.position.set(-0.42, 3.22, -0.05);
+      sonicEarL.rotation.z = 0.42;
+      const sonicEarR = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.38, 6), sonicBlueMat);
+      sonicEarR.position.set(0.42, 3.22, -0.05);
+      sonicEarR.rotation.z = -0.42;
+      sonicGear.add(sonicEarL, sonicEarR);
+
+      // 7. Mario: Oversized Red Cap + 3D Brim + White Circle Emblem + Back Hair Curls
+      const marioGear = new THREE.Group();
+      const marioRedMat = makeToonMat({ color: 0xdc2626 });
+      const capCrown = new THREE.Mesh(
+        new THREE.SphereGeometry(0.7, 18, 16, 0, Math.PI * 2, 0, Math.PI * 0.54),
+        marioRedMat
+      );
+      capCrown.position.set(0, 2.68, 0);
+      const capBrim = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.64, 0.68, 0.1, 18, 1, false, Math.PI * 0.62, Math.PI * 0.76),
+        makeToonMat({ color: 0xb91c1c })
+      );
+      capBrim.position.set(0, 2.72, -0.2);
+      const capBadge = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.06, 12), highlightMat);
+      capBadge.rotation.x = Math.PI / 2 - 0.3;
+      capBadge.position.set(0, 2.98, -0.62);
+      const backHair = new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.26, 0.24), hairMat);
+      backHair.position.set(0, 2.34, 0.56);
+      marioGear.add(capCrown, capBrim, capBadge, backHair);
+
+      // 8. Mickey: Big Round Disc Ears + Wagging Tail
+      const mickeyGear = new THREE.Group();
+      const mickeyBlackMat = makeToonMat({ color: 0x111827 });
+      const mEarL = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 0.1, 16), mickeyBlackMat);
+      mEarL.rotation.x = Math.PI / 2;
+      mEarL.position.set(-0.56, 3.26, 0.05);
+      const mEarR = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 0.1, 16), mickeyBlackMat);
+      mEarR.rotation.x = Math.PI / 2;
+      mEarR.position.set(0.56, 3.26, 0.05);
+      const mickeyTail = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.9, 8), mickeyBlackMat);
+      mickeyTail.position.set(0, 1.25, 0.68);
+      mickeyTail.rotation.x = 0.85;
+      mickeyGear.add(mEarL, mEarR, mickeyTail);
+
+      // 9. SpongeBob: Wavy Top Sponge Ridges
+      const spongeGear = new THREE.Group();
+      const spongeMat = makeToonMat({ color: 0xfacc15 });
+      [-0.32, 0, 0.32].forEach((sx) => {
+        const bump = new THREE.Mesh(new THREE.SphereGeometry(0.18, 10, 8), spongeMat);
+        bump.position.set(sx, 3.12, 0);
+        spongeGear.add(bump);
       });
 
-      const isaacGear = new THREE.Group();
-      const omnitrixBand = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.19, 0.18, 12), new THREE.MeshStandardMaterial({ color: 0x0f172a }));
-      omnitrixBand.position.set(-0.65, 1.28, 0);
-      const omnitrixCore = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.2, 12), new THREE.MeshBasicMaterial({ color: 0x4ade80 }));
-      omnitrixCore.position.set(-0.65, 1.28, 0);
-      isaacGear.add(omnitrixBand, omnitrixCore);
+      // 10. Aang: Glowing Blue Airbender Arrow + Flowing Orange Shawl
+      const aangGear = new THREE.Group();
+      const arrowMat = makeToonMat({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 0.4 });
+      const arrowLine = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.1, 0.85), arrowMat);
+      arrowLine.position.set(0, 3.26, 0.08);
+      const arrowBack = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.45, 0.1), arrowMat);
+      arrowBack.position.set(0, 2.95, 0.61);
+      const airShawl = new THREE.Mesh(new THREE.TorusGeometry(0.52, 0.13, 8, 16), makeToonMat({ color: 0xea580c }));
+      airShawl.rotation.x = Math.PI / 2 + 0.18;
+      airShawl.position.set(0, 1.92, 0.04);
+      aangGear.add(arrowLine, arrowBack, airShawl);
 
-      const alexHair = new THREE.Group();
-      const alexTop = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.35, 1.0), new THREE.MeshStandardMaterial({ color: 0xe85d04 }));
-      alexTop.position.set(0, 2.95, 0);
-      const alexPonytail = new THREE.Mesh(new THREE.BoxGeometry(0.32, 1.15, 0.26), new THREE.MeshStandardMaterial({ color: 0xe85d04 }));
-      alexPonytail.position.set(0.22, 2.25, 0.52);
-      alexHair.add(alexTop, alexPonytail);
-
-      const steveHair = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.32, 1.0), new THREE.MeshStandardMaterial({ color: 0x4a2c18 }));
-      steveHair.position.set(0, 2.95, 0);
-
-      const mickeyGear = new THREE.Group();
-      const earL = new THREE.Mesh(new THREE.SphereGeometry(0.32, 14, 14), new THREE.MeshStandardMaterial({ color: 0x111827 }));
-      earL.position.set(-0.52, 3.15, 0);
-      const earR = new THREE.Mesh(new THREE.SphereGeometry(0.32, 14, 14), new THREE.MeshStandardMaterial({ color: 0x111827 }));
-      earR.position.set(0.52, 3.15, 0);
-      const mickeyTail = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.85, 8), new THREE.MeshStandardMaterial({ color: 0x111827 }));
-      mickeyTail.position.set(0, 1.25, 0.65);
-      mickeyTail.rotation.x = 0.85;
-      mickeyGear.add(earL, earR, mickeyTail);
-
+      // 11. Doraemon: Red Collar + Golden Bell + Bouncing Red Tail
       const doraGear = new THREE.Group();
-      const collar = new THREE.Mesh(new THREE.TorusGeometry(0.46, 0.08, 10, 20), new THREE.MeshStandardMaterial({ color: 0xef4444 }));
+      const collar = new THREE.Mesh(new THREE.TorusGeometry(0.49, 0.09, 8, 18), makeToonMat({ color: 0xef4444 }));
       collar.rotation.x = Math.PI / 2;
-      collar.position.y = 2.02;
-      const bell = new THREE.Mesh(new THREE.SphereGeometry(0.15, 12, 12), new THREE.MeshStandardMaterial({ color: 0xfacc15 }));
-      bell.position.set(0, 1.98, -0.46);
-      const doraTail = new THREE.Mesh(new THREE.SphereGeometry(0.18, 12, 12), new THREE.MeshStandardMaterial({ color: 0xef4444 }));
-      doraTail.position.set(0, 1.15, 0.56);
+      collar.position.y = 2.04;
+      const bell = new THREE.Mesh(new THREE.SphereGeometry(0.17, 10, 10), goldMat);
+      bell.position.set(0, 1.98, -0.5);
+      const doraTail = new THREE.Mesh(new THREE.SphereGeometry(0.21, 12, 10), makeToonMat({ color: 0xef4444 }));
+      doraTail.position.set(0, 1.15, 0.6);
       doraGear.add(collar, bell, doraTail);
 
+      // 12. Sulley: Curved Horns + Purple Back Spikes + Thick Monster Tail
       const sulleyGear = new THREE.Group();
-      const hornL = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.45, 10), new THREE.MeshStandardMaterial({ color: 0xfef3c7 }));
-      hornL.position.set(-0.42, 3.15, 0);
-      hornL.rotation.z = 0.45;
-      const hornR = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.45, 10), new THREE.MeshStandardMaterial({ color: 0xfef3c7 }));
-      hornR.position.set(0.42, 3.15, 0);
-      hornR.rotation.z = -0.45;
-      const sulleyTail = new THREE.Mesh(new THREE.ConeGeometry(0.28, 1.35, 10), new THREE.MeshStandardMaterial({ color: 0x38bdf8 }));
-      sulleyTail.position.set(0, 1.05, 0.72);
+      const sulleyBlueMat = makeToonMat({ color: 0x38bdf8 });
+      const sulleyPurpleMat = makeToonMat({ color: 0x9333ea });
+      const hornMat = makeToonMat({ color: 0xfef3c7 });
+      const hornL = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.5, 10), hornMat);
+      hornL.position.set(-0.46, 3.25, 0);
+      hornL.rotation.z = 0.48;
+      const hornR = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.5, 10), hornMat);
+      hornR.position.set(0.46, 3.25, 0);
+      hornR.rotation.z = -0.48;
+      [1.85, 1.5, 1.18].forEach((sy) => {
+        const spike = new THREE.Mesh(new THREE.ConeGeometry(0.13, 0.34, 6), sulleyPurpleMat);
+        spike.position.set(0, sy, 0.54);
+        spike.rotation.x = 1.35;
+        sulleyGear.add(spike);
+      });
+      const sulleyTail = new THREE.Mesh(new THREE.ConeGeometry(0.32, 1.45, 10), sulleyBlueMat);
+      sulleyTail.position.set(0, 1.05, 0.78);
       sulleyTail.rotation.x = 1.15;
       sulleyGear.add(hornL, hornR, sulleyTail);
 
-      const iceCape = new THREE.Mesh(new THREE.BoxGeometry(0.86, 1.25, 0.08), new THREE.MeshStandardMaterial({ color: 0xbae6fd, transparent: true, opacity: 0.8 }));
-      iceCape.position.set(0, 1.48, 0.5);
-      iceCape.rotation.x = 0.22;
+      accGroup.add(
+        isaacGear, hayyanGear, sofeaGear, steveGear, alexGear, sonicGear,
+        marioGear, mickeyGear, spongeGear, aangGear, doraGear, sulleyGear
+      );
 
-      const backpack = new THREE.Mesh(new THREE.BoxGeometry(0.64, 0.72, 0.34), new THREE.MeshStandardMaterial({ color: 0x7e22ce }));
-      backpack.position.set(0, 1.55, 0.5);
-
-      const airArrow = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.12, 0.65), new THREE.MeshBasicMaterial({ color: 0x38bdf8 }));
-      airArrow.position.set(0, 3.12, -0.1);
-
-      accGroup.add(marioCapGroup, sonicQuillsGroup, isaacGear, alexHair, steveHair, mickeyGear, doraGear, sulleyGear, iceCape, backpack, airArrow);
-
-      const spinBall = new THREE.Mesh(new THREE.SphereGeometry(0.88, 22, 22), sonicBallMat);
-      spinBall.position.set(0, 0.9, 0);
+      // Sonic Spin-Dash Ball & Translucent Shield Bubble
+      const spinBall = new THREE.Mesh(new THREE.SphereGeometry(0.92, 20, 18), sonicBallMat);
+      spinBall.position.set(0, 0.92, 0);
       spinBall.visible = false;
 
       const shieldBubble = new THREE.Mesh(
-        new THREE.SphereGeometry(1.75, 24, 24),
-        new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.42 })
+        new THREE.SphereGeometry(1.78, 22, 20),
+        new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.38 })
       );
       shieldBubble.position.set(0, 1.6, 0);
+      shieldBubble.userData.noOutline = true;
       shieldBubble.visible = false;
 
-      root.add(leftLegGroup, rightLegGroup, torsoMesh, voxelTorso, leftArmGroup, rightArmGroup, headGroup, voxelHead, spinBall, shieldBubble);
+      root.add(
+        leftLegGroup, rightLegGroup, torsoGroup, voxelTorso,
+        leftArmGroup, rightArmGroup, headGroup, voxelHead, spinBall, shieldBubble
+      );
+
+      // Single Post-Pass Inverted-Hull Toon Outline on All Opaque Parts
+      applyToonOutlines(root, 1.065);
 
       const rig = {
         root,
@@ -1743,11 +1907,13 @@
         stepCounter: 0,
         dustTimer: 0,
         shieldBubble,
+
         setCharacter(key) {
           rig.charKey = key;
           const cfg = HERO_CONFIGS[key] || HERO_CONFIGS.isaac;
           bodyMat.map = getCostumeTexture(key);
           bodyMat.needsUpdate = true;
+
           headMat.color.setHex(cfg.headColor);
           hairMat.color.setHex(cfg.hairColor);
           armMat.color.setHex(cfg.armColor);
@@ -1756,24 +1922,45 @@
           shoeMat.color.setHex(cfg.shoeColor);
           stripeMat.color.setHex(cfg.shoeStripe);
 
-          torsoMesh.visible = !cfg.isBlocky;
+          const isHuman = ["isaac", "hayyan", "sofea", "mario", "aang"].includes(key);
+          earL.visible = earR.visible = isHuman;
+
+          const hasHairDome = !cfg.isBlocky && ["isaac", "hayyan", "sofea"].includes(key);
+          hairDome.visible = hasHairDome;
+          hairShine.visible = hasHairDome;
+
+          torsoGroup.visible = !cfg.isBlocky;
           voxelTorso.visible = cfg.isBlocky;
           headGroup.visible = !cfg.isBlocky;
           voxelHead.visible = cfg.isBlocky;
-          hairDome.visible = !cfg.isBlocky && !["sonic", "mario", "mickey", "aang", "doraemon", "sulley"].includes(key);
 
-          marioCapGroup.visible = key === "mario";
-          sonicQuillsGroup.visible = key === "sonic";
+          if (key === "sulley") {
+            torsoGroup.scale.set(1.34, 1.18, 1.24);
+            headGroup.position.y = 2.78;
+          } else if (key === "doraemon") {
+            torsoGroup.scale.set(1.16, 0.92, 1.14);
+            headGroup.scale.setScalar(1.12);
+            headGroup.position.y = 2.55;
+          } else {
+            torsoGroup.scale.set(1, 1, 1);
+            headGroup.scale.setScalar(1);
+            headGroup.position.y = 2.62;
+          }
+
           isaacGear.visible = key === "isaac";
-          alexHair.visible = key === "alex";
-          steveHair.visible = key === "steve";
+          hayyanGear.visible = key === "hayyan";
+          sofeaGear.visible = key === "sofea";
+          steveGear.visible = key === "steve";
+          alexGear.visible = key === "alex";
+          sonicGear.visible = key === "sonic";
+          marioGear.visible = key === "mario";
           mickeyGear.visible = key === "mickey";
+          spongeGear.visible = key === "spongebob";
+          aangGear.visible = key === "aang";
           doraGear.visible = key === "doraemon";
           sulleyGear.visible = key === "sulley";
-          iceCape.visible = key === "hayyan";
-          backpack.visible = key === "sofea";
-          airArrow.visible = key === "aang";
         },
+
         updateVisuals(dt, now, invuln, shieldOn) {
           const cfg = HERO_CONFIGS[rig.charKey] || HERO_CONFIGS.isaac;
           const targetX = rig.lane * LANE_WIDTH;
@@ -1788,7 +1975,7 @@
             if (rig.jumpY <= baseGroundY) {
               rig.jumpY = baseGroundY;
               rig.jumpVelY = 0;
-              rig.landingSquash = 0.22;
+              rig.landingSquash = 0.24;
               spawnFootstepTrail(root.position.x, baseGroundY + 0.15, 0.35, rig.stepCounter++);
             }
           } else {
@@ -1796,27 +1983,74 @@
           }
           root.position.y = rig.jumpY;
 
-          if (rig.landingSquash > 0) rig.landingSquash = Math.max(0, rig.landingSquash - dt * 1.4);
+          if (rig.landingSquash > 0) rig.landingSquash = Math.max(0, rig.landingSquash - dt * 1.45);
 
           const isAirborne = rig.jumpY > baseGroundY + 0.15;
           const isSonicBall = rig.charKey === "sonic" && (isAirborne || rig.isDucking);
 
           leftLegGroup.visible = rightLegGroup.visible = leftArmGroup.visible = rightArmGroup.visible = accGroup.visible = !isSonicBall;
-          torsoMesh.visible = !cfg.isBlocky && !isSonicBall;
+          torsoGroup.visible = !cfg.isBlocky && !isSonicBall;
           voxelTorso.visible = cfg.isBlocky && !isSonicBall;
           headGroup.visible = !cfg.isBlocky && !isSonicBall;
           voxelHead.visible = cfg.isBlocky && !isSonicBall;
           spinBall.visible = isSonicBall;
-          if (isSonicBall) spinBall.rotation.x -= 20 * dt;
+          if (isSonicBall) spinBall.rotation.x -= 22 * dt;
 
-          const runCycle = Math.sin(now * 0.014);
-          leftLegGroup.rotation.x = isAirborne ? 0.55 : runCycle * 0.75;
-          rightLegGroup.rotation.x = isAirborne ? -0.45 : -runCycle * 0.75;
-          leftArmGroup.rotation.x = isAirborne ? -0.7 : -runCycle * 0.65;
-          rightArmGroup.rotation.x = isAirborne ? -0.7 : runCycle * 0.65;
+          const freq = rig.charKey === "sonic" ? 0.02 : (rig.charKey === "sulley" ? 0.011 : 0.015);
+          const runCycle = Math.sin(now * freq);
+          const bounce = Math.abs(Math.cos(now * freq));
 
-          const targetScaleY = rig.isDucking && !isSonicBall ? 0.52 : 1.0 - rig.landingSquash;
-          const targetScaleXZ = rig.isDucking && !isSonicBall ? 1.18 : 1.0 + rig.landingSquash * 0.7;
+          let forwardLean = -0.1;
+          let bodyYaw = 0;
+          if (rig.charKey === "sonic") {
+            forwardLean = -0.34;
+          } else if (rig.charKey === "doraemon" || rig.charKey === "spongebob") {
+            bodyYaw = runCycle * 0.14;
+          } else if (rig.charKey === "sulley") {
+            bodyYaw = runCycle * 0.1;
+          }
+          root.rotation.x = isAirborne ? -0.16 : forwardLean;
+          torsoGroup.rotation.y = Math.PI * 0.5 + bodyYaw;
+
+          const legAmp = rig.charKey === "mario" ? 0.92 : 0.78;
+          leftLegGroup.rotation.x = isAirborne ? 0.6 : runCycle * legAmp;
+          rightLegGroup.rotation.x = isAirborne ? -0.48 : -runCycle * legAmp;
+
+          if (rig.charKey === "sonic" && !isAirborne) {
+            leftArmGroup.rotation.x = 0.88 + runCycle * 0.12;
+            rightArmGroup.rotation.x = 0.88 - runCycle * 0.12;
+          } else if (cfg.isBlocky) {
+            leftArmGroup.rotation.x = isAirborne ? -0.85 : -runCycle * 0.85;
+            rightArmGroup.rotation.x = isAirborne ? -0.85 : runCycle * 0.85;
+          } else {
+            leftArmGroup.rotation.x = isAirborne ? -0.75 : -runCycle * 0.68;
+            rightArmGroup.rotation.x = isAirborne ? -0.75 : runCycle * 0.68;
+          }
+
+          const baseHeadY = rig.charKey === "sulley" ? 2.78 : (rig.charKey === "doraemon" ? 2.55 : 2.62);
+          headGroup.position.y = baseHeadY + (isAirborne ? 0.04 : bounce * 0.07);
+          voxelHead.position.y = 2.6 + (isAirborne ? 0.04 : bounce * 0.07);
+
+          if (rig.charKey === "hayyan") {
+            iceCape.rotation.x = 0.28 + bounce * 0.18;
+            iceCape.rotation.z = runCycle * 0.08;
+          } else if (rig.charKey === "alex") {
+            alexPonytail.rotation.z = runCycle * 0.24;
+            alexPonytail.rotation.x = 0.14 + bounce * 0.15;
+          } else if (rig.charKey === "sofea") {
+            pigtailL.rotation.z = 0.55 + bounce * 0.22;
+            pigtailR.rotation.z = -0.55 - bounce * 0.22;
+          } else if (rig.charKey === "mickey") {
+            mickeyTail.rotation.z = runCycle * 0.35;
+          } else if (rig.charKey === "doraemon") {
+            doraTail.position.y = 1.15 + bounce * 0.08;
+          } else if (rig.charKey === "sulley") {
+            sulleyTail.rotation.y = runCycle * 0.25;
+          }
+
+          const airStretch = isAirborne ? Math.min(0.14, Math.abs(rig.jumpVelY) * 0.01) : 0;
+          const targetScaleY = rig.isDucking && !isSonicBall ? 0.52 : (1.0 - rig.landingSquash + airStretch);
+          const targetScaleXZ = rig.isDucking && !isSonicBall ? 1.2 : (1.0 + rig.landingSquash * 0.72 - airStretch * 0.45);
           root.scale.y += (targetScaleY - root.scale.y) * 16 * dt;
           root.scale.x += (targetScaleXZ - root.scale.x) * 16 * dt;
           root.scale.z += (targetScaleXZ - root.scale.z) * 16 * dt;
